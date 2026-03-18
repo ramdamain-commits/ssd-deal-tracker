@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PS5 SSD Deal Tracker</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <header>
+    <h1>PS5 SSD Deal Tracker</h1>
+    <p id="updated-at">最終更新: 読み込み中...</p>
+  </header>
+  <main>
+    <div id="product-cards" class="card-grid"></div>
+    <section id="chart-section">
+      <h2>価格推移</h2>
+      <canvas id="price-chart"></canvas>
+    </section>
+  </main>
+  <footer>
+    <p>※ 価格.com表示価格。送料別の場合があります。</p>
+  </footer>
+  <script src="app.js"></script>
+</body>
+</html>
