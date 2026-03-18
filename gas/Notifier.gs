@@ -136,6 +136,7 @@ function sendWeeklySummary() {
       if (it.trend === '目標接近') {
         lines.push('    目標¥' + it.targetPrice.toLocaleString() + 'まであと¥' + (it.currentPrice - it.targetPrice).toLocaleString());
       }
+      lines.push('    ' + it.kakakuUrl);
     }
   } else {
     lines.push('');
@@ -154,6 +155,7 @@ function sendWeeklySummary() {
     lines.push(arrow + ' ' + it.name + ' (' + it.capacity + ')');
     lines.push('  現在: ¥' + it.currentPrice.toLocaleString() + ' / 目標: ¥' + it.targetPrice.toLocaleString() + ' / 最安記録: ¥' + (it.lowestPrice ? it.lowestPrice.toLocaleString() : '---'));
     lines.push('  週間変動: ' + it.changeLabel + ' [' + it.trend + ']');
+    lines.push('  ' + it.kakakuUrl);
     lines.push('');
   }
 
