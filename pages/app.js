@@ -9,6 +9,11 @@ const STATUS_BADGE = {
 };
 
 async function init() {
+  // ローディング表示
+  document.getElementById('product-cards').innerHTML =
+    '<p class="loading">価格データを読み込み中...</p>';
+  document.getElementById('updated-at').textContent = '最終更新: 読み込み中...';
+
   try {
     const res = await fetch(API_URL);
     const data = await res.json();
@@ -69,17 +74,35 @@ function renderChart(products, priceHistory) {
     });
   });
 
+  const isMobile = window.innerWidth < 600;
+
   new Chart(ctx, {
     type: 'line',
     data: { datasets: datasets },
     options: {
       responsive: true,
+      maintainAspectRatio: !isMobile,
+      aspectRatio: isMobile ? 1 : 2,
       scales: {
-        x: { type: 'category', title: { display: true, text: '日付' } },
-        y: { title: { display: true, text: '価格（円）' }, beginAtZero: false },
+        x: {
+          type: 'category',
+          title: { display: !isMobile, text: '日付' },
+          ticks: { maxRotation: 45, font: { size: isMobile ? 10 : 12 } },
+        },
+        y: {
+          title: { display: !isMobile, text: '価格（円）' },
+          ticks: {
+            font: { size: isMobile ? 10 : 12 },
+            callback: function(v) { return '¥' + v.toLocaleString(); }
+          },
+          beginAtZero: false,
+        },
       },
       plugins: {
-        legend: { position: 'bottom' },
+        legend: {
+          position: 'bottom',
+          labels: { font: { size: isMobile ? 10 : 12 }, boxWidth: isMobile ? 12 : 40 },
+        },
       },
     },
   });
