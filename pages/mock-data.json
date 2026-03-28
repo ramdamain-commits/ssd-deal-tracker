@@ -16,6 +16,14 @@
       "kakaku_url": "https://kakaku.com/item/K0001234567/",
       "shop_url": "https://example.com", "shop_name": "ヨドバシ.com",
       "last_checked": "2026-03-18T20:00:00+09:00"
+    },
+    {
+      "product_id": "crucial-t500-hs-2tb", "name": "Crucial T500 with Heatsink", "capacity": "2TB",
+      "current_price": 21380, "target_price": 20000, "lowest_price": 19800,
+      "recent_avg_price": 22500, "status": "もう少し",
+      "kakaku_url": "https://kakaku.com/item/K0001588764/",
+      "shop_url": "https://example.com", "shop_name": "ツクモ",
+      "last_checked": "2026-03-18T20:00:00+09:00"
     }
   ],
   "price_history": {
@@ -28,6 +36,11 @@
       { "date": "2026-03-01", "price": 12000 },
       { "date": "2026-03-10", "price": 11200 },
       { "date": "2026-03-18", "price": 10500 }
+    ],
+    "crucial-t500-hs-2tb": [
+      { "date": "2026-03-01", "price": 23000 },
+      { "date": "2026-03-10", "price": 22100 },
+      { "date": "2026-03-18", "price": 21380 }
     ]
   }
 }

@@ -65,7 +65,7 @@ function showAddDialog() {
   newRow[COL.SHOP_URL - 1] = scrapeResult.shopUrl || '';
   newRow[COL.CONSECUTIVE_FAIL_COUNT - 1] = scrapeResult.error ? 1 : 0;
   newRow[COL.STATUS - 1] = scrapeResult.error ? STATUS_ERROR :
-    determineStatus(scrapeResult.price, targetPrice, getConfigValue('price_threshold_pct') || 5);
+    determineStatus(scrapeResult.price, targetPrice, getConfigValue('price_threshold_pct') || 10);
 
   sheet.appendRow(newRow);
 

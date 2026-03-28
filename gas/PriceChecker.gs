@@ -92,7 +92,7 @@ function checkAllPrices() {
     historySheet.appendRow([productId, now, result.price, 'kakaku.com']);
 
     // ステータス判定
-    const thresholdPct = getConfigValue('price_threshold_pct') || 5;
+    const thresholdPct = getConfigValue('price_threshold_pct') || 10;
     const status = determineStatus(result.price, targetPrice, thresholdPct);
     sheet.getRange(rowNum, COL.STATUS).setValue(status);
     Logger.log('  ✓ ¥' + result.price + ' [' + status + ']');

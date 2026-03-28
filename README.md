@@ -1,6 +1,6 @@
 # PS5 SSD Deal Tracker
 
-PS5対応SSD 10機種の価格を自動追跡し、目標価格を下回ったらメール通知するシステム。
+PS5対応SSD 14機種（1TB/2TB）の価格を自動追跡し、目標価格を下回ったらメール通知するシステム。
 
 ## 機能
 
@@ -35,7 +35,7 @@ PS5対応SSD 10機種の価格を自動追跡し、目標価格を下回った�
    |-----|-------|
    | notify_email | (あなたのメールアドレス) |
    | cooldown_hours | 24 |
-   | price_threshold_pct | 5 |
+   | price_threshold_pct | 10 |
 
 ### 2. clasp push
 

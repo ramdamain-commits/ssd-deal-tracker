@@ -82,7 +82,7 @@ function setupSheets() {
     ['key', 'value'],
     ['notify_email', Session.getActiveUser().getEmail()],
     ['cooldown_hours', 24],
-    ['price_threshold_pct', 5]
+    ['price_threshold_pct', 10]
   ]);
   config.getRange(1, 1, 1, 2).setFontWeight('bold');
   config.setFrozenRows(1);
@@ -166,4 +166,90 @@ function fixProducts() {
   }
 
   SpreadsheetApp.getUi().alert(fixCount + '件を差し替えました。\n\n「SSD管理」→「今すぐ価格取得」で再取得してください。');
+}
+
+/**
+ * 2026-03 ラインナップ更新
+ * - 旧世代1件を削除（FireCuda 530 HS）
+ * - 既存製品の target_price を相場に合わせて引き上げ
+ * - 2TB枠 + SN7100 の5製品を追加
+ * - config の price_threshold_pct を 5→10 に更新
+ * ※ 一度だけ実行すること
+ */
+function updateProducts2026() {
+  const sheet = getSheet(SHEET_PRODUCTS);
+  const lastRow = sheet.getLastRow();
+  const data = sheet.getRange(DATA_START_ROW, 1, lastRow - HEADER_ROW, COL.STATUS).getValues();
+
+  // --- 1. FireCuda 530 HS を削除 ---
+  for (let i = data.length - 1; i >= 0; i--) {
+    if (data[i][COL.PRODUCT_ID - 1] === 'seagate-firecuda-530-hs-1tb') {
+      sheet.deleteRow(i + DATA_START_ROW);
+    }
+  }
+
+  // --- 2. 既存製品の target_price 更新 ---
+  const priceUpdates = {
+    'samsung-990-pro-hs-1tb': 14500,
+    'wd-black-sn850x-hs-1tb': 13000,
+    'crucial-t500-hs-1tb': 12500,
+    'crucial-t500-1tb': 12000,
+    'kioxia-exceria-plus-g3-1tb': 13000,
+    'kioxia-exceria-plus-g4-1tb': 15000,
+    'adata-legend-960-1tb': 14000,
+    'samsung-9100-pro-1tb': 15000,
+    'samsung-990-pro-1tb': 14000,
+  };
+
+  // 削除後に再取得
+  const lastRow2 = sheet.getLastRow();
+  const data2 = sheet.getRange(DATA_START_ROW, 1, lastRow2 - HEADER_ROW, COL.STATUS).getValues();
+  let updateCount = 0;
+  for (let i = 0; i < data2.length; i++) {
+    const pid = data2[i][COL.PRODUCT_ID - 1];
+    if (priceUpdates[pid]) {
+      sheet.getRange(i + DATA_START_ROW, COL.TARGET_PRICE).setValue(priceUpdates[pid]);
+      updateCount++;
+    }
+  }
+
+  // --- 3. 新製品5件を追加 ---
+  const newProducts = [
+    ['samsung-990-pro-hs-2tb', 'Samsung 990 PRO with Heatsink', '2TB', 'https://kakaku.com/item/K0001546441/', 24000],
+    ['wd-black-sn850p-2tb', 'WD_BLACK SN850P for PS5', '2TB', 'https://kakaku.com/item/K0001551012/', 24000],
+    ['crucial-t500-hs-2tb', 'Crucial T500 with Heatsink', '2TB', 'https://kakaku.com/item/K0001588764/', 20000],
+    ['wd-black-sn7100-1tb', 'WD_BLACK SN7100', '1TB', 'https://kakaku.com/item/K0001673419/', 15000],
+    ['samsung-9100-pro-hs-2tb', 'Samsung 9100 PRO with Heatsink', '2TB', 'https://kakaku.com/item/K0001681636/', 40000],
+  ];
+
+  for (const p of newProducts) {
+    const newRow = new Array(COL.STATUS).fill('');
+    newRow[COL.PRODUCT_ID - 1] = p[0];
+    newRow[COL.NAME - 1] = p[1];
+    newRow[COL.CAPACITY - 1] = p[2];
+    newRow[COL.KAKAKU_URL - 1] = p[3];
+    newRow[COL.TARGET_PRICE - 1] = p[4];
+    newRow[COL.CONSECUTIVE_FAIL_COUNT - 1] = 0;
+    newRow[COL.STATUS - 1] = STATUS_HIGH;
+    sheet.appendRow(newRow);
+  }
+
+  // --- 4. config: price_threshold_pct を 10 に ---
+  const configSheet = getSheet(SHEET_CONFIG);
+  const configData = configSheet.getDataRange().getValues();
+  for (let i = 1; i < configData.length; i++) {
+    if (configData[i][0] === 'price_threshold_pct') {
+      configSheet.getRange(i + 1, 2).setValue(10);
+      break;
+    }
+  }
+
+  SpreadsheetApp.getUi().alert(
+    '2026-03 ラインナップ更新完了！\n\n' +
+    '・旧世代削除: 1件（FireCuda 530 HS）\n' +
+    '・target_price更新: ' + updateCount + '件\n' +
+    '・新製品追加: ' + newProducts.length + '件\n' +
+    '・price_threshold_pct: 5→10\n\n' +
+    '「SSD管理」→「今すぐ価格取得」で新製品の初回価格を取得してください。'
+  );
 }

@@ -58,7 +58,7 @@ function renderCards(products) {
 
 function renderChart(products, priceHistory) {
   const ctx = document.getElementById('price-chart').getContext('2d');
-  const colors = ['#1a237e','#c62828','#2e7d32','#ff6f00','#6a1b9a','#00838f','#4e342e','#546e7a','#ad1457','#1565c0'];
+  const colors = ['#1a237e','#c62828','#2e7d32','#ff6f00','#6a1b9a','#00838f','#4e342e','#546e7a','#ad1457','#1565c0','#e65100','#00695c','#283593','#9e9d24'];
   const datasets = [];
 
   products.forEach(function(p, i) {
