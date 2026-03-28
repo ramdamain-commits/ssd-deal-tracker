@@ -60,6 +60,20 @@ PS5対応SSD 14機種（1TB/2TB）の価格を自動追跡し、目標価格を�
 1. リポジトリの Settings → Pages
 2. Source: Deploy from a branch / Branch: main / Folder: /pages
 
+## ラインナップ更新（マイグレーション）
+
+製品の追加・削除・`target_price` 一括更新は、`Config.gs` に定義されたマイグレーション関数で管理する。
+
+| 関数 | 内容 |
+|------|------|
+| `seedProducts()` | 初期10機種を一括登録（初回のみ） |
+| `fixProducts()` | 販売終了4件を差し替え |
+| `updateProducts2026()` | 2026-03 ラインナップ更新（FireCuda 530 HS 削除、2TB 3機種 + SN7100 追加、target_price 更新） |
+
+**実行手順:** スプレッドシートを開き、「SSD管理」メニュー → 実行したい関数を選択。各関数は一度だけ実行すること。
+
+> 次回ラインナップ更新時は、新しいマイグレーション関数を `Config.gs` に追加する（既存関数は変更しない）。
+
 ## ファイル構成
 
 ```

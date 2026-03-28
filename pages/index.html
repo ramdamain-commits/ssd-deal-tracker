@@ -13,6 +13,45 @@
     <p id="updated-at">最終更新: 読み込み中...</p>
   </header>
   <main>
+    <!-- フィルタバー -->
+    <div id="filter-bar" class="filter-bar" role="group" aria-label="製品フィルタ">
+
+      <div class="filter-group">
+        <span class="filter-label">容量</span>
+        <div class="filter-pills" role="group" aria-label="容量フィルタ">
+          <button class="pill active" data-filter="capacity" data-value="all" aria-pressed="true">全て</button>
+          <button class="pill" data-filter="capacity" data-value="1tb" aria-pressed="false">1TB</button>
+          <button class="pill" data-filter="capacity" data-value="2tb" aria-pressed="false">2TB</button>
+        </div>
+      </div>
+
+      <div class="filter-group">
+        <span class="filter-label">メーカー</span>
+        <div class="filter-pills" role="group" aria-label="メーカーフィルタ">
+          <button class="pill active" data-filter="brand" data-value="all" aria-pressed="true">全て</button>
+          <button class="pill" data-filter="brand" data-value="samsung" aria-pressed="false">Samsung</button>
+          <button class="pill" data-filter="brand" data-value="wd" aria-pressed="false">WD</button>
+          <button class="pill" data-filter="brand" data-value="crucial" aria-pressed="false">Crucial</button>
+          <button class="pill" data-filter="brand" data-value="kioxia" aria-pressed="false">KIOXIA</button>
+          <button class="pill" data-filter="brand" data-value="adata" aria-pressed="false">ADATA</button>
+        </div>
+      </div>
+
+      <div class="filter-group">
+        <span class="filter-label">ステータス</span>
+        <div class="filter-pills" role="group" aria-label="ステータスフィルタ">
+          <button class="pill active" data-filter="status" data-value="all" aria-pressed="true">全て</button>
+          <button class="pill" data-filter="status" data-value="買い時" aria-pressed="false">買い時</button>
+          <button class="pill" data-filter="status" data-value="高め" aria-pressed="false">高め</button>
+          <button class="pill" data-filter="status" data-value="未取得" aria-pressed="false">未取得</button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- フィルタ結果なし表示 -->
+    <p id="no-results" class="no-results" hidden>条件に一致する製品がありません。</p>
+
     <div id="product-cards" class="card-grid"></div>
     <section id="chart-section">
       <h2>価格推移</h2>

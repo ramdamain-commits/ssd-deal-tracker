@@ -9,3 +9,9 @@
 
 - User-Agent だけでなく Accept, Accept-Language, Referer 等の完全なヘッダーセットを設定する
 - 価格取得は JSON-LD を優先し、正規表現は fallback にする
+
+## マイグレーション関数
+
+- `seedProducts()` → `fixProducts()` → `updateProducts2026()` の順で積み重なっている
+- 次回ラインナップ更新時は新しいマイグレーション関数を追加し、古いものはアーカイブを検討する
+- マイグレーション関数を書くときは `setupSheets()` のデフォルト値やフォールバック値（`|| N`）も全箇所更新すること
