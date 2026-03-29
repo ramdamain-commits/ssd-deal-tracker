@@ -1,5 +1,7 @@
 # PS5用SSD価格トラッキング＆通知システム 設計書
 
+> **注記（2026-03-29 追記）**: この文書は 2026-03-18 時点の初期設計記録である。現行仕様（追跡対象・閾値等）は [README.md](../../../README.md) および [CHANGELOG.md](../../../CHANGELOG.md) を参照すること。
+
 ## 概要
 
 PS5対応M.2 NVMe Gen4 SSDの価格を自動追跡し、目標価格を下回ったらメール通知するシステム。
@@ -24,7 +26,9 @@ PS5対応M.2 NVMe Gen4 SSDの価格を自動追跡し、目標価格を下回っ
 
 ## 追跡対象SSD
 
-すべて PS5 拡張スロット要件（M.2 2280 / PCIe Gen4 x4 / シーケンシャルリード 5,500MB/s 以上 / ヒートシンク込み高さ 11.25mm 以内）を満たす 1TB モデル。
+すべて PS5 拡張スロット要件（M.2 2280 / PCIe Gen4 x4 / シーケンシャルリード 5,500MB/s 以上 / ヒートシンク込み高さ 11.25mm 以内）を満たすモデル。1TB と 2TB の計14系統を追跡する。
+
+> **変更履歴**: 初期設計時は 1TB × 10機種だったが、v1.1.0（2026-03-28）で 2TB モデル3機種・SN7100・Samsung 9100 PRO HS を追加し、FireCuda 530 HS を削除して14系統に拡張した。詳細は CHANGELOG.md を参照。
 
 | # | 製品 | 容量 | リード速度 | ヒートシンク | 特徴 |
 |---|------|------|-----------|-------------|------|
@@ -33,12 +37,17 @@ PS5対応M.2 NVMe Gen4 SSDの価格を自動追跡し、目標価格を下回っ
 | 3 | Samsung 990 PRO with Heatsink | 1TB | 7,450 MB/s | 付属 | 最速クラス、高信頼性 |
 | 4 | Crucial T500 with Heatsink | 1TB | 7,300 MB/s | 付属 | コスパ良好、頻繁にセール |
 | 5 | Nextorage NEM-PAB | 1TB | 7,300 MB/s | 付属 | ソニーグループ、PS5相性◎ |
-| 6 | Seagate FireCuda 530 Heatsink | 1TB | 7,300 MB/s | 付属 | PS5初期から定番 |
-| 7 | Corsair MP600 PRO LPX | 1TB | 7,100 MB/s | 付属 | PS5専用設計ヒートシンク |
-| 8 | Kingston FURY Renegade with Heatsink | 1TB | 7,300 MB/s | 付属 | 高耐久・高速 |
-| 9 | ADATA Legend 960 MAX | 1TB | 7,400 MB/s | 付属 | 廉価帯で人気 |
-| 10 | Team Group T-FORCE CARDEA A440 PRO | 1TB | 7,000 MB/s | 付属 | コスパ重視の選択肢 |
+| 6 | Corsair MP600 PRO LPX | 1TB | 7,100 MB/s | 付属 | PS5専用設計ヒートシンク |
+| 7 | Kingston FURY Renegade with Heatsink | 1TB | 7,300 MB/s | 付属 | 高耐久・高速 |
+| 8 | ADATA Legend 960 MAX | 1TB | 7,400 MB/s | 付属 | 廉価帯で人気 |
+| 9 | Team Group T-FORCE CARDEA A440 PRO | 1TB | 7,000 MB/s | 付属 | コスパ重視の選択肢 |
+| 10 | WD_BLACK SN7100 | 1TB | — | — | SN850X 後継の注目モデル（v1.1.0 追加） |
+| 11 | Samsung 990 PRO with Heatsink | 2TB | 7,450 MB/s | 付属 | 大容量枠（v1.1.0 追加） |
+| 12 | WD_BLACK SN850P for PS5 | 2TB | 7,300 MB/s | 付属 | 大容量枠（v1.1.0 追加） |
+| 13 | Crucial T500 with Heatsink | 2TB | 7,300 MB/s | 付属 | 大容量枠（v1.1.0 追加） |
+| 14 | Samsung 9100 PRO with Heatsink | 2TB | — | 付属 | Gen5 大容量枠（v1.1.0 追加） |
 
+※ Seagate FireCuda 530 Heatsink 1TB は旧世代・在庫減少のため v1.1.0 で監視終了。
 ※ 製品の追加・削除はカスタムメニュー「SSD管理」またはスプレッドシート直接編集で対応可能。
 
 ## データ構造
@@ -77,7 +86,7 @@ PS5対応M.2 NVMe Gen4 SSDの価格を自動追跡し、目標価格を下回っ
 |-----|-------|------|
 | notify_email | (メールアドレス) | 通知先 |
 | cooldown_hours | 24 | 同一製品の通知間隔（時間） |
-| price_threshold_pct | 5 | 目標価格からのバッファ（%）。5%以内なら「もう少し」 |
+| price_threshold_pct | 10 | 目標価格からのバッファ（%）。10%以内なら「もう少し」（初期設計時は 5% だったが、v1.1.0 で 10% に拡大） |
 
 ## 価格取得
 
@@ -118,7 +127,7 @@ HTMLから最安値・最安ショップ名・ショップURLをパース
 
 - 価格.com の HTML 構造変更でパースが壊れる可能性がある → 失敗検知で早期発見
 - GAS の UrlFetch は JS レンダリング不可 → 価格.com のサーバーサイドレンダリング部分に依存
-- 1日2回 × 5〜6機種 = 10〜12回のfetch → GAS無料枠（20,000回/日）に対して十分余裕
+- 1日2回 × 14系統 = 28回のfetch → GAS無料枠（20,000回/日）に対して十分余裕（初期設計時は10機種前提で10〜12回だった）
 
 ## 通知
 

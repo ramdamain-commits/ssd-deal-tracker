@@ -1,7 +1,7 @@
 # Repo Rules
 
 - 親 `C:\Users\ramda\projects\CLAUDE.md` を先に適用する
-- 正本は `docs/superpowers/specs/2026-03-18-ssd-deal-tracker-design.md`
+- 現行仕様の正本は `README.md` + `CHANGELOG.md`。初期設計の経緯は `docs/superpowers/specs/2026-03-18-ssd-deal-tracker-design.md` を参照
 - GAS コードは clasp push でデプロイ
 - 文字コードは UTF-8
 
