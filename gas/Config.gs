@@ -19,6 +19,7 @@ const COL = {
   SHOP_URL: 12,
   CONSECUTIVE_FAIL_COUNT: 13,
   STATUS: 14,
+  STORE_COUNT: 15,
 };
 
 // ===== ステータス =====
@@ -30,8 +31,9 @@ const STATUS_ERROR = '取得エラー';
 // ===== 定数 =====
 const HEADER_ROW = 1;
 const DATA_START_ROW = 2;
-const PRICE_ANOMALY_RATIO = 0.5; // 前回比50%以上変動で異常値
+const PRICE_ANOMALY_RATIO = 0.5; // 基準価格比50%以上変動で異常値（基準=30日平均 or 前回価格）
 const CONSECUTIVE_FAIL_ALERT_THRESHOLD = 3;
+const LOW_STORE_COUNT_THRESHOLD = 3; // これ以下の店舗数は信頼性が低い
 
 // ===== ヘルパー =====
 function getSpreadsheet() {
@@ -51,6 +53,26 @@ function getConfigValue(key) {
   return null;
 }
 
+// ===== マイグレーションガード =====
+
+/**
+ * マイグレーション関数が実行済みかチェックする
+ * @param {string} funcName - 関数名
+ * @returns {boolean} 実行済みなら true
+ */
+function isMigrationDone(funcName) {
+  return getConfigValue('migration_' + funcName) === 'done';
+}
+
+/**
+ * マイグレーション関数を実行済みとしてマークする
+ * @param {string} funcName - 関数名
+ */
+function markMigrationDone(funcName) {
+  var configSheet = getSheet(SHEET_CONFIG);
+  configSheet.appendRow(['migration_' + funcName, 'done']);
+}
+
 /**
  * 初期セットアップ: ヘッダー行と config データを投入する
  * ※ 一度だけ実行すること
@@ -60,12 +82,12 @@ function setupSheets() {
 
   // --- products シート ---
   const products = ss.getSheetByName(SHEET_PRODUCTS);
-  products.getRange(1, 1, 1, 14).setValues([[
+  products.getRange(1, 1, 1, 15).setValues([[
     'product_id', 'name', 'capacity', 'kakaku_url', 'target_price',
     'current_price', 'lowest_price', 'recent_avg_price', 'last_checked',
-    'last_notified', 'shop_name', 'shop_url', 'consecutive_fail_count', 'status'
+    'last_notified', 'shop_name', 'shop_url', 'consecutive_fail_count', 'status', 'store_count'
   ]]);
-  products.getRange(1, 1, 1, 14).setFontWeight('bold');
+  products.getRange(1, 1, 1, 15).setFontWeight('bold');
   products.setFrozenRows(1);
 
   // --- price_history シート ---
@@ -95,6 +117,7 @@ function setupSheets() {
  * ※ 一度だけ実行すること
  */
 function seedProducts() {
+  if (isMigrationDone('seedProducts')) { Logger.log('seedProducts は実行済みです'); return; }
   const products = [
     ['samsung-990-pro-hs-1tb', 'Samsung 990 PRO with Heatsink', '1TB', 'https://kakaku.com/item/K0001546439/', 13000],
     ['wd-black-sn850x-hs-1tb', 'WD_BLACK SN850X with Heatsink', '1TB', 'https://kakaku.com/item/K0001472482/', 12000],
@@ -112,7 +135,7 @@ function seedProducts() {
   const now = new Date();
 
   for (const p of products) {
-    const newRow = new Array(COL.STATUS).fill('');
+    const newRow = new Array(COL.STORE_COUNT).fill('');
     newRow[COL.PRODUCT_ID - 1] = p[0];
     newRow[COL.NAME - 1] = p[1];
     newRow[COL.CAPACITY - 1] = p[2];
@@ -123,6 +146,7 @@ function seedProducts() {
     sheet.appendRow(newRow);
   }
 
+  markMigrationDone('seedProducts');
   SpreadsheetApp.getUi().alert(products.length + '機種を登録しました！\n\n次に「SSD管理」→「今すぐ価格取得」で初回価格を取得してください。');
 }
 
@@ -131,9 +155,10 @@ function seedProducts() {
  * ※ 一度だけ実行すること
  */
 function fixProducts() {
+  if (isMigrationDone('fixProducts')) { Logger.log('fixProducts は実行済みです'); return; }
   const sheet = getSheet(SHEET_PRODUCTS);
   const lastRow = sheet.getLastRow();
-  const data = sheet.getRange(DATA_START_ROW, 1, lastRow - HEADER_ROW, COL.STATUS).getValues();
+  const data = sheet.getRange(DATA_START_ROW, 1, lastRow - HEADER_ROW, COL.STORE_COUNT).getValues();
 
   // 差し替えマップ: 旧product_id → [新product_id, 新name, 新url, 新target_price]
   const replacements = {
@@ -165,6 +190,7 @@ function fixProducts() {
     }
   }
 
+  markMigrationDone('fixProducts');
   SpreadsheetApp.getUi().alert(fixCount + '件を差し替えました。\n\n「SSD管理」→「今すぐ価格取得」で再取得してください。');
 }
 
@@ -177,9 +203,10 @@ function fixProducts() {
  * ※ 一度だけ実行すること
  */
 function updateProducts2026() {
+  if (isMigrationDone('updateProducts2026')) { Logger.log('updateProducts2026 は実行済みです'); return; }
   const sheet = getSheet(SHEET_PRODUCTS);
   const lastRow = sheet.getLastRow();
-  const data = sheet.getRange(DATA_START_ROW, 1, lastRow - HEADER_ROW, COL.STATUS).getValues();
+  const data = sheet.getRange(DATA_START_ROW, 1, lastRow - HEADER_ROW, COL.STORE_COUNT).getValues();
 
   // --- 1. FireCuda 530 HS を削除 ---
   for (let i = data.length - 1; i >= 0; i--) {
@@ -203,7 +230,7 @@ function updateProducts2026() {
 
   // 削除後に再取得
   const lastRow2 = sheet.getLastRow();
-  const data2 = sheet.getRange(DATA_START_ROW, 1, lastRow2 - HEADER_ROW, COL.STATUS).getValues();
+  const data2 = sheet.getRange(DATA_START_ROW, 1, lastRow2 - HEADER_ROW, COL.STORE_COUNT).getValues();
   let updateCount = 0;
   for (let i = 0; i < data2.length; i++) {
     const pid = data2[i][COL.PRODUCT_ID - 1];
@@ -223,7 +250,7 @@ function updateProducts2026() {
   ];
 
   for (const p of newProducts) {
-    const newRow = new Array(COL.STATUS).fill('');
+    const newRow = new Array(COL.STORE_COUNT).fill('');
     newRow[COL.PRODUCT_ID - 1] = p[0];
     newRow[COL.NAME - 1] = p[1];
     newRow[COL.CAPACITY - 1] = p[2];
@@ -244,6 +271,7 @@ function updateProducts2026() {
     }
   }
 
+  markMigrationDone('updateProducts2026');
   SpreadsheetApp.getUi().alert(
     '2026-03 ラインナップ更新完了！\n\n' +
     '・旧世代削除: 1件（FireCuda 530 HS）\n' +
@@ -252,4 +280,69 @@ function updateProducts2026() {
     '・price_threshold_pct: 5→10\n\n' +
     '「SSD管理」→「今すぐ価格取得」で新製品の初回価格を取得してください。'
   );
+}
+
+/**
+ * 2026-04 メンテナンス
+ * - 重複 product_id を除去（updateProducts2026 誤再実行の修復）
+ * - WD_BLACK SN850P 2TB（取り扱い中止）を削除
+ * - 全製品の consecutive_fail_count をゼロにリセット
+ * - エラーステータスを「高め」にリセット
+ * ※ エディタから直接実行可能（getUi不使用）
+ */
+function maintenance202604() {
+  if (isMigrationDone('maintenance202604')) { Logger.log('maintenance202604 は実行済みです'); return; }
+  var sheet = getSheet(SHEET_PRODUCTS);
+
+  // --- 0. 重複 product_id を除去（後ろの行を削除） ---
+  var lastRow0 = sheet.getLastRow();
+  var data0 = sheet.getRange(DATA_START_ROW, 1, lastRow0 - HEADER_ROW, COL.STORE_COUNT).getValues();
+  var seen = {};
+  var dupCount = 0;
+  for (var k = data0.length - 1; k >= 0; k--) {
+    var pid = data0[k][COL.PRODUCT_ID - 1];
+    if (seen[pid]) {
+      sheet.deleteRow(k + DATA_START_ROW);
+      dupCount++;
+    } else {
+      seen[pid] = true;
+    }
+  }
+
+  // --- 1. SN850P 2TB を削除 ---
+  var lastRow1 = sheet.getLastRow();
+  var data1 = sheet.getRange(DATA_START_ROW, 1, lastRow1 - HEADER_ROW, COL.STORE_COUNT).getValues();
+  var deleteCount = 0;
+  for (var i = data1.length - 1; i >= 0; i--) {
+    if (data1[i][COL.PRODUCT_ID - 1] === 'wd-black-sn850p-2tb') {
+      sheet.deleteRow(i + DATA_START_ROW);
+      deleteCount++;
+    }
+  }
+
+  // --- 2. 全製品の fail count リセット + エラーステータス解除 ---
+  var lastRow2 = sheet.getLastRow();
+  var data2 = sheet.getRange(DATA_START_ROW, 1, lastRow2 - HEADER_ROW, COL.STORE_COUNT).getValues();
+  var resetCount = 0;
+  for (var j = 0; j < data2.length; j++) {
+    var rowNum = j + DATA_START_ROW;
+    var failCount = data2[j][COL.CONSECUTIVE_FAIL_COUNT - 1] || 0;
+    var status = data2[j][COL.STATUS - 1];
+
+    if (failCount > 0) {
+      sheet.getRange(rowNum, COL.CONSECUTIVE_FAIL_COUNT).setValue(0);
+      resetCount++;
+    }
+    if (status === STATUS_ERROR) {
+      sheet.getRange(rowNum, COL.STATUS).setValue(STATUS_HIGH);
+    }
+  }
+
+  markMigrationDone('maintenance202604');
+  var msg = '2026-04 メンテナンス完了！' +
+    ' 重複除去: ' + dupCount + '件' +
+    ' / SN850P削除: ' + deleteCount + '件' +
+    ' / failリセット: ' + resetCount + '件' +
+    ' / 残り製品数: ' + (lastRow2 - HEADER_ROW) + '件';
+  Logger.log(msg);
 }

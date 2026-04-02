@@ -12,7 +12,7 @@ function checkAllPrices() {
     return;
   }
 
-  const data = sheet.getRange(DATA_START_ROW, 1, lastRow - HEADER_ROW, COL.STATUS).getValues();
+  const data = sheet.getRange(DATA_START_ROW, 1, lastRow - HEADER_ROW, COL.STORE_COUNT).getValues();
   const total = data.length;
   const errors = [];
   const deals = [];
@@ -54,17 +54,20 @@ function checkAllPrices() {
       continue;
     }
 
-    // 異常値チェック（前回価格がある場合、50%以上の変動は異常）
-    if (prevPrice && prevPrice > 0) {
-      const ratio = Math.abs(result.price - prevPrice) / prevPrice;
+    // 異常値チェック（30日平均 > 前回価格 の優先順で基準価格を決定）
+    const avgPrice = calcRecentAvgPrice(productId, historySheet);
+    const basePrice = (avgPrice !== null) ? avgPrice : prevPrice;
+    if (basePrice && basePrice > 0) {
+      const ratio = Math.abs(result.price - basePrice) / basePrice;
       if (ratio > PRICE_ANOMALY_RATIO) {
+        const baseLabel = (avgPrice !== null) ? '30日平均¥' + Math.round(avgPrice) : '前回¥' + prevPrice;
         const newFailCount = consecutiveFails + 1;
         sheet.getRange(rowNum, COL.CONSECUTIVE_FAIL_COUNT).setValue(newFailCount);
         sheet.getRange(rowNum, COL.STATUS).setValue(STATUS_ERROR);
         sheet.getRange(rowNum, COL.LAST_CHECKED).setValue(now);
         errors.push({
           name, capacity,
-          error: '異常値検出: ¥' + prevPrice + ' → ¥' + result.price + ' (変動率' + Math.round(ratio * 100) + '%)',
+          error: '異常値検出: ' + baseLabel + ' → ¥' + result.price + ' (変動率' + Math.round(ratio * 100) + '%)',
           failCount: newFailCount
         });
         continue;
@@ -76,16 +79,16 @@ function checkAllPrices() {
     sheet.getRange(rowNum, COL.LAST_CHECKED).setValue(now);
     sheet.getRange(rowNum, COL.SHOP_NAME).setValue(result.shopName || '');
     sheet.getRange(rowNum, COL.SHOP_URL).setValue(result.shopUrl || '');
+    sheet.getRange(rowNum, COL.STORE_COUNT).setValue(result.storeCount !== null ? result.storeCount : '');
     sheet.getRange(rowNum, COL.CONSECUTIVE_FAIL_COUNT).setValue(0);
 
     // 最安値更新
     const newLowest = (!prevLowest || result.price < prevLowest) ? result.price : prevLowest;
     sheet.getRange(rowNum, COL.LOWEST_PRICE).setValue(newLowest);
 
-    // 直近30日平均を更新
-    const avg = calcRecentAvgPrice(productId, historySheet);
-    if (avg !== null) {
-      sheet.getRange(rowNum, COL.RECENT_AVG_PRICE).setValue(Math.round(avg));
+    // 直近30日平均を更新（異常値チェックで既に計算済みの avgPrice を再利用）
+    if (avgPrice !== null) {
+      sheet.getRange(rowNum, COL.RECENT_AVG_PRICE).setValue(Math.round(avgPrice));
     }
 
     // 価格履歴に追記
@@ -111,9 +114,8 @@ function checkAllPrices() {
     }
   }
 
-  // 通知送信
+  // 通知送信（買い時のみ即時通知。エラーはデイリーサマリーに集約）
   if (deals.length > 0) sendDealNotifications(deals);
-  if (errors.length > 0) sendErrorNotifications(errors);
 
   // 完了サマリー
   const okCount = total - errors.length;

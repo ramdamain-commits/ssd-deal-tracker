@@ -12,6 +12,11 @@
 
 ## マイグレーション関数
 
-- `seedProducts()` → `fixProducts()` → `updateProducts2026()` の順で積み重なっている
+- `seedProducts()` → `fixProducts()` → `updateProducts2026()` → `maintenance202604()` の順で積み重なっている
 - 次回ラインナップ更新時は新しいマイグレーション関数を追加し、古いものはアーカイブを検討する
 - マイグレーション関数を書くときは `setupSheets()` のデフォルト値やフォールバック値（`|| N`）も全箇所更新すること
+
+## GAS 実行の注意
+
+- エディタの「実行」ボタンから呼ぶ関数では `SpreadsheetApp.getUi().alert()` が使えない（コンテキストエラーになる）。結果出力は `Logger.log()` を使う
+- `getUi().alert()` はスプレッドシートのカスタムメニュー経由でのみ使用可能

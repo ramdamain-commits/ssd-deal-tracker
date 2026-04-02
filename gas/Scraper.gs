@@ -19,13 +19,13 @@ function scrapeKakakuPrice(kakakuUrl) {
     const statusCode = response.getResponseCode();
 
     if (statusCode !== 200) {
-      return { price: null, shopName: null, shopUrl: null, error: 'HTTP ' + statusCode };
+      return { price: null, shopName: null, shopUrl: null, storeCount: null, error: 'HTTP ' + statusCode };
     }
 
     const html = response.getContentText();
     return parseKakakuHtml(html, kakakuUrl);
   } catch (e) {
-    return { price: null, shopName: null, shopUrl: null, error: e.message };
+    return { price: null, shopName: null, shopUrl: null, storeCount: null, error: e.message };
   }
 }
 
@@ -54,7 +54,7 @@ function parseKakakuHtml(html, baseUrl) {
   }
 
   if (!price || price <= 0) {
-    return { price: null, shopName: null, shopUrl: null, error: '価格要素が見つかりません' };
+    return { price: null, shopName: null, shopUrl: null, storeCount: null, error: '価格要素が見つかりません' };
   }
 
   // --- 最安ショップURLを抽出 ---
@@ -74,7 +74,22 @@ function parseKakakuHtml(html, baseUrl) {
     }
   }
 
-  return { price, shopName, shopUrl, error: null };
+  // --- 出品店舗数を抽出 ---
+  let storeCount = null;
+  // 優先1: JSON-LD の offerCount
+  const offerCountMatch = html.match(/"offerCount"\s*:\s*"?(\d+)"?/);
+  if (offerCountMatch) {
+    storeCount = parseInt(offerCountMatch[1], 10);
+  }
+  // 優先2: 「XX店の価格を見る」パターン
+  if (!storeCount) {
+    const storeTextMatch = html.match(/(\d+)\s*店の価格/);
+    if (storeTextMatch) {
+      storeCount = parseInt(storeTextMatch[1], 10);
+    }
+  }
+
+  return { price, shopName, shopUrl, storeCount, error: null };
 }
 
 // ===== デバッグ・テスト用関数 =====

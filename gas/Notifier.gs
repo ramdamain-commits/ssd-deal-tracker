@@ -69,7 +69,7 @@ function sendWeeklySummary() {
   const lastRow = sheet.getLastRow();
   if (lastRow < DATA_START_ROW) return;
 
-  const data = sheet.getRange(DATA_START_ROW, 1, lastRow - HEADER_ROW, COL.STATUS).getValues();
+  const data = sheet.getRange(DATA_START_ROW, 1, lastRow - HEADER_ROW, COL.STORE_COUNT).getValues();
   const historyData = historySheet.getDataRange().getValues();
 
   const now = new Date();
@@ -211,4 +211,116 @@ function classifyTrend(changeRate, currentPrice, targetPrice) {
   if (changeRate <= -2) return 'じわ下げ';
   if (changeRate >= 5) return '上昇注意';
   return '横ばい';
+}
+
+// ===== デイリーサマリー =====
+
+/**
+ * デイリーサマリーメールを送信する（毎日21時トリガー用）
+ * 全製品の価格状況 + エラーがあればまとめて1通で送る
+ */
+function sendDailySummary() {
+  var notifyEmail = getConfigValue('notify_email');
+  if (!notifyEmail) return;
+
+  var sheet = getSheet(SHEET_PRODUCTS);
+  var lastRow = sheet.getLastRow();
+  if (lastRow < DATA_START_ROW) return;
+
+  var data = sheet.getRange(DATA_START_ROW, 1, lastRow - HEADER_ROW, COL.STORE_COUNT).getValues();
+  var now = new Date();
+
+  var lines = [
+    'SSD Deal Tracker デイリーサマリー',
+    Utilities.formatDate(now, 'Asia/Tokyo', 'yyyy/MM/dd (E) HH:mm'),
+    '',
+    '━━━━━━━━━━━━━━━━━━━━━━━━',
+  ];
+
+  // エラー集計
+  var errorItems = [];
+  var normalItems = [];
+
+  for (var i = 0; i < data.length; i++) {
+    var row = data[i];
+    var name = row[COL.NAME - 1];
+    var capacity = row[COL.CAPACITY - 1];
+    var currentPrice = row[COL.CURRENT_PRICE - 1];
+    var targetPrice = row[COL.TARGET_PRICE - 1];
+    var lowestPrice = row[COL.LOWEST_PRICE - 1];
+    var status = row[COL.STATUS - 1];
+    var storeCount = row[COL.STORE_COUNT - 1];
+    var consecutiveFails = row[COL.CONSECUTIVE_FAIL_COUNT - 1] || 0;
+    var kakakuUrl = row[COL.KAKAKU_URL - 1];
+
+    if (status === STATUS_ERROR) {
+      errorItems.push({
+        name: name,
+        capacity: capacity,
+        failCount: consecutiveFails
+      });
+    } else if (currentPrice) {
+      normalItems.push({
+        name: name,
+        capacity: capacity,
+        currentPrice: currentPrice,
+        targetPrice: targetPrice,
+        lowestPrice: lowestPrice,
+        status: status,
+        storeCount: storeCount,
+        kakakuUrl: kakakuUrl
+      });
+    }
+  }
+
+  // エラーセクション
+  if (errorItems.length > 0) {
+    lines.push('');
+    lines.push('⚠ 取得エラー: ' + errorItems.length + '件');
+    lines.push('');
+    for (var j = 0; j < errorItems.length; j++) {
+      var err = errorItems[j];
+      var warn = err.failCount >= CONSECUTIVE_FAIL_ALERT_THRESHOLD ? ' ← 連続' + err.failCount + '回失敗' : '';
+      lines.push('  - ' + err.name + ' (' + err.capacity + ')' + warn);
+    }
+    if (errorItems.some(function(e) { return e.failCount >= CONSECUTIVE_FAIL_ALERT_THRESHOLD; })) {
+      lines.push('');
+      lines.push('  ※ 連続' + CONSECUTIVE_FAIL_ALERT_THRESHOLD + '回以上失敗 → HTML構造変更の可能性あり');
+    }
+    lines.push('');
+    lines.push('━━━━━━━━━━━━━━━━━━━━━━━━');
+  }
+
+  // 価格サマリーセクション
+  lines.push('');
+  lines.push('▼ 全製品サマリー（' + normalItems.length + '件）');
+  lines.push('');
+
+  // ステータス順: 買い時 → もう少し → 高め
+  var statusOrder = {};
+  statusOrder[STATUS_BUY] = 0;
+  statusOrder[STATUS_ALMOST] = 1;
+  statusOrder[STATUS_HIGH] = 2;
+  normalItems.sort(function(a, b) { return (statusOrder[a.status] || 9) - (statusOrder[b.status] || 9); });
+
+  for (var k = 0; k < normalItems.length; k++) {
+    var it = normalItems[k];
+    var icon = it.status === STATUS_BUY ? '🔥' : (it.status === STATUS_ALMOST ? '👀' : '  ');
+    lines.push(icon + ' [' + it.status + '] ' + it.name + ' (' + it.capacity + ')');
+    var storeLine = '  現在: ¥' + it.currentPrice.toLocaleString() + ' / 目標: ¥' + it.targetPrice.toLocaleString() + ' / 最安記録: ¥' + (it.lowestPrice ? it.lowestPrice.toLocaleString() : '---');
+    if (it.storeCount) storeLine += ' / ' + it.storeCount + '店';
+    lines.push(storeLine);
+    if (it.storeCount && it.storeCount <= LOW_STORE_COUNT_THRESHOLD) {
+      lines.push('  ⚠ 取扱' + it.storeCount + '店のみ — 価格の信頼性が低い可能性あり');
+    }
+    lines.push('  ' + it.kakakuUrl);
+    lines.push('');
+  }
+
+  lines.push('━━━━━━━━━━━━━━━━━━━━━━━━');
+  lines.push('ビューページ: https://ramdamain-commits.github.io/ssd-deal-tracker/pages/');
+
+  var errorTag = errorItems.length > 0 ? ' (エラー' + errorItems.length + '件)' : '';
+  var subject = '【SSD日次レポート】' + Utilities.formatDate(now, 'Asia/Tokyo', 'MM/dd') + errorTag;
+  GmailApp.sendEmail(notifyEmail, subject, lines.join('\n'));
 }
