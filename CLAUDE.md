@@ -12,7 +12,7 @@
 
 ## マイグレーション関数
 
-- `seedProducts()` → `fixProducts()` → `updateProducts2026()` → `maintenance202604()` の順で積み重なっている
+- `seedProducts()` → `fixProducts()` → `updateProducts2026()` → `maintenance202604()` → `migration202604b()` の順で積み重なっている
 - 次回ラインナップ更新時は新しいマイグレーション関数を追加し、古いものはアーカイブを検討する
 - マイグレーション関数を書くときは `setupSheets()` のデフォルト値やフォールバック値（`|| N`）も全箇所更新すること
 

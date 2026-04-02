@@ -346,3 +346,34 @@ function maintenance202604() {
     ' / 残り製品数: ' + (lastRow2 - HEADER_ROW) + '件';
   Logger.log(msg);
 }
+
+/**
+ * 2026-04 マイグレーション (b)
+ * - products シートに store_count ヘッダー追加（O列）
+ * - 既存マイグレーション関数の実行済みフラグを一括登録
+ * ※ エディタから直接実行可能（getUi不使用）
+ */
+function migration202604b() {
+  if (isMigrationDone('migration202604b')) { Logger.log('migration202604b は実行済みです'); return; }
+
+  // --- 1. store_count ヘッダー追加 ---
+  var sheet = getSheet(SHEET_PRODUCTS);
+  var currentHeader = sheet.getRange(HEADER_ROW, COL.STORE_COUNT).getValue();
+  if (!currentHeader) {
+    sheet.getRange(HEADER_ROW, COL.STORE_COUNT).setValue('store_count').setFontWeight('bold');
+    Logger.log('store_count ヘッダーを追加しました');
+  }
+
+  // --- 2. 過去マイグレーションの実行済みフラグを一括登録 ---
+  var pastMigrations = ['seedProducts', 'fixProducts', 'updateProducts2026', 'maintenance202604'];
+  var registered = 0;
+  for (var i = 0; i < pastMigrations.length; i++) {
+    if (!isMigrationDone(pastMigrations[i])) {
+      markMigrationDone(pastMigrations[i]);
+      registered++;
+    }
+  }
+
+  markMigrationDone('migration202604b');
+  Logger.log('migration202604b 完了: ヘッダー追加=' + (currentHeader ? 'スキップ' : '済') + ' / フラグ登録=' + registered + '件');
+}
