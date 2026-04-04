@@ -160,7 +160,7 @@ function sendWeeklySummary() {
   }
 
   lines.push('━━━━━━━━━━━━━━━━━━━━━━━━');
-  lines.push('ビューページ: https://ramdamain-commits.github.io/ssd-deal-tracker/pages/');
+  lines.push('ビューページ: https://ramdamain-commits.github.io/ssd-deal-tracker/');
   lines.push('※ 価格.com表示価格。送料別の場合があります。');
 
   const subject = '【SSD週次レポート】' + (notable.length > 0 ? notable[0].trend + ': ' + notable[0].name : '今週の価格動向');
@@ -318,7 +318,7 @@ function sendDailySummary() {
   }
 
   lines.push('━━━━━━━━━━━━━━━━━━━━━━━━');
-  lines.push('ビューページ: https://ramdamain-commits.github.io/ssd-deal-tracker/pages/');
+  lines.push('ビューページ: https://ramdamain-commits.github.io/ssd-deal-tracker/');
 
   var errorTag = errorItems.length > 0 ? ' (エラー' + errorItems.length + '件)' : '';
   var subject = '【SSD日次レポート】' + Utilities.formatDate(now, 'Asia/Tokyo', 'MM/dd') + errorTag;
