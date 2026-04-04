@@ -220,17 +220,17 @@ function classifyTrend(changeRate, currentPrice, targetPrice) {
  * 全製品の価格状況 + エラーがあればまとめて1通で送る
  */
 function sendDailySummary() {
-  var notifyEmail = getConfigValue('notify_email');
+  const notifyEmail = getConfigValue('notify_email');
   if (!notifyEmail) return;
 
-  var sheet = getSheet(SHEET_PRODUCTS);
-  var lastRow = sheet.getLastRow();
+  const sheet = getSheet(SHEET_PRODUCTS);
+  const lastRow = sheet.getLastRow();
   if (lastRow < DATA_START_ROW) return;
 
-  var data = sheet.getRange(DATA_START_ROW, 1, lastRow - HEADER_ROW, COL.STORE_COUNT).getValues();
-  var now = new Date();
+  const data = sheet.getRange(DATA_START_ROW, 1, lastRow - HEADER_ROW, COL.STORE_COUNT).getValues();
+  const now = new Date();
 
-  var lines = [
+  const lines = [
     'SSD Deal Tracker デイリーサマリー',
     Utilities.formatDate(now, 'Asia/Tokyo', 'yyyy/MM/dd (E) HH:mm'),
     '',
@@ -238,38 +238,25 @@ function sendDailySummary() {
   ];
 
   // エラー集計
-  var errorItems = [];
-  var normalItems = [];
+  const errorItems = [];
+  const normalItems = [];
 
-  for (var i = 0; i < data.length; i++) {
-    var row = data[i];
-    var name = row[COL.NAME - 1];
-    var capacity = row[COL.CAPACITY - 1];
-    var currentPrice = row[COL.CURRENT_PRICE - 1];
-    var targetPrice = row[COL.TARGET_PRICE - 1];
-    var lowestPrice = row[COL.LOWEST_PRICE - 1];
-    var status = row[COL.STATUS - 1];
-    var storeCount = row[COL.STORE_COUNT - 1];
-    var consecutiveFails = row[COL.CONSECUTIVE_FAIL_COUNT - 1] || 0;
-    var kakakuUrl = row[COL.KAKAKU_URL - 1];
+  for (let i = 0; i < data.length; i++) {
+    const row = data[i];
+    const name = row[COL.NAME - 1];
+    const capacity = row[COL.CAPACITY - 1];
+    const currentPrice = row[COL.CURRENT_PRICE - 1];
+    const targetPrice = row[COL.TARGET_PRICE - 1];
+    const lowestPrice = row[COL.LOWEST_PRICE - 1];
+    const status = row[COL.STATUS - 1];
+    const storeCount = row[COL.STORE_COUNT - 1];
+    const consecutiveFails = row[COL.CONSECUTIVE_FAIL_COUNT - 1] || 0;
+    const kakakuUrl = row[COL.KAKAKU_URL - 1];
 
     if (status === STATUS_ERROR) {
-      errorItems.push({
-        name: name,
-        capacity: capacity,
-        failCount: consecutiveFails
-      });
+      errorItems.push({ name, capacity, failCount: consecutiveFails });
     } else if (currentPrice) {
-      normalItems.push({
-        name: name,
-        capacity: capacity,
-        currentPrice: currentPrice,
-        targetPrice: targetPrice,
-        lowestPrice: lowestPrice,
-        status: status,
-        storeCount: storeCount,
-        kakakuUrl: kakakuUrl
-      });
+      normalItems.push({ name, capacity, currentPrice, targetPrice, lowestPrice, status, storeCount, kakakuUrl });
     }
   }
 
@@ -278,9 +265,8 @@ function sendDailySummary() {
     lines.push('');
     lines.push('⚠ 取得エラー: ' + errorItems.length + '件');
     lines.push('');
-    for (var j = 0; j < errorItems.length; j++) {
-      var err = errorItems[j];
-      var warn = err.failCount >= CONSECUTIVE_FAIL_ALERT_THRESHOLD ? ' ← 連続' + err.failCount + '回失敗' : '';
+    for (const err of errorItems) {
+      const warn = err.failCount >= CONSECUTIVE_FAIL_ALERT_THRESHOLD ? ' ← 連続' + err.failCount + '回失敗' : '';
       lines.push('  - ' + err.name + ' (' + err.capacity + ')' + warn);
     }
     if (errorItems.some(function(e) { return e.failCount >= CONSECUTIVE_FAIL_ALERT_THRESHOLD; })) {
@@ -297,17 +283,13 @@ function sendDailySummary() {
   lines.push('');
 
   // ステータス順: 買い時 → もう少し → 高め
-  var statusOrder = {};
-  statusOrder[STATUS_BUY] = 0;
-  statusOrder[STATUS_ALMOST] = 1;
-  statusOrder[STATUS_HIGH] = 2;
+  const statusOrder = { [STATUS_BUY]: 0, [STATUS_ALMOST]: 1, [STATUS_HIGH]: 2 };
   normalItems.sort(function(a, b) { return (statusOrder[a.status] || 9) - (statusOrder[b.status] || 9); });
 
-  for (var k = 0; k < normalItems.length; k++) {
-    var it = normalItems[k];
-    var icon = it.status === STATUS_BUY ? '🔥' : (it.status === STATUS_ALMOST ? '👀' : '  ');
+  for (const it of normalItems) {
+    const icon = it.status === STATUS_BUY ? '🔥' : (it.status === STATUS_ALMOST ? '👀' : '  ');
     lines.push(icon + ' [' + it.status + '] ' + it.name + ' (' + it.capacity + ')');
-    var storeLine = '  現在: ¥' + it.currentPrice.toLocaleString() + ' / 目標: ¥' + it.targetPrice.toLocaleString() + ' / 最安記録: ¥' + (it.lowestPrice ? it.lowestPrice.toLocaleString() : '---');
+    let storeLine = '  現在: ¥' + it.currentPrice.toLocaleString() + ' / 目標: ¥' + it.targetPrice.toLocaleString() + ' / 最安記録: ¥' + (it.lowestPrice ? it.lowestPrice.toLocaleString() : '---');
     if (it.storeCount) storeLine += ' / ' + it.storeCount + '店';
     lines.push(storeLine);
     if (it.storeCount && it.storeCount <= LOW_STORE_COUNT_THRESHOLD) {
@@ -320,7 +302,7 @@ function sendDailySummary() {
   lines.push('━━━━━━━━━━━━━━━━━━━━━━━━');
   lines.push('ビューページ: https://ramdamain-commits.github.io/ssd-deal-tracker/');
 
-  var errorTag = errorItems.length > 0 ? ' (エラー' + errorItems.length + '件)' : '';
-  var subject = '【SSD日次レポート】' + Utilities.formatDate(now, 'Asia/Tokyo', 'MM/dd') + errorTag;
+  const errorTag = errorItems.length > 0 ? ' (エラー' + errorItems.length + '件)' : '';
+  const subject = '【SSD日次レポート】' + Utilities.formatDate(now, 'Asia/Tokyo', 'MM/dd') + errorTag;
   GmailApp.sendEmail(notifyEmail, subject, lines.join('\n'));
 }

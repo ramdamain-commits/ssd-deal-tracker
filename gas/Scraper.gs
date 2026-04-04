@@ -1,21 +1,28 @@
 /**
+ * UrlFetchApp 用の共通ヘッダーオプションを返す
+ * @returns {Object}
+ */
+function buildFetchOptions() {
+  return {
+    muteHttpExceptions: true,
+    headers: {
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+      'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
+      'Accept-Language': 'ja-JP,ja;q=0.9',
+      'Referer': 'https://kakaku.com/',
+      'Cache-Control': 'no-cache'
+    }
+  };
+}
+
+/**
  * 価格.com の製品ページから最安値情報を取得する
  * @param {string} kakakuUrl - 価格.com 製品ページURL
  * @returns {{price: number|null, shopName: string|null, shopUrl: string|null, error: string|null}}
  */
 function scrapeKakakuPrice(kakakuUrl) {
   try {
-    const options = {
-      muteHttpExceptions: true,
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
-        'Accept-Language': 'ja-JP,ja;q=0.9',
-        'Referer': 'https://kakaku.com/',
-        'Cache-Control': 'no-cache'
-      }
-    };
-    const response = UrlFetchApp.fetch(kakakuUrl, options);
+    const response = UrlFetchApp.fetch(kakakuUrl, buildFetchOptions());
     const statusCode = response.getResponseCode();
 
     if (statusCode !== 200) {
@@ -99,17 +106,7 @@ function parseKakakuHtml(html, baseUrl) {
  */
 function debugFetchKakaku() {
   const url = 'https://kakaku.com/item/K0001520655/';
-  const options = {
-    muteHttpExceptions: true,
-    headers: {
-      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
-      'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
-      'Accept-Language': 'ja-JP,ja;q=0.9',
-      'Referer': 'https://kakaku.com/',
-      'Cache-Control': 'no-cache'
-    }
-  };
-  const response = UrlFetchApp.fetch(url, options);
+  const response = UrlFetchApp.fetch(url, buildFetchOptions());
   Logger.log('Status: ' + response.getResponseCode());
   const body = response.getContentText();
   Logger.log('Body length: ' + body.length);

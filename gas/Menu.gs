@@ -50,7 +50,7 @@ function showAddDialog() {
   const scrapeResult = scrapeKakakuPrice(kakakuUrl);
   const now = new Date();
 
-  const newRow = new Array(COL.STATUS).fill('');
+  const newRow = new Array(COL.STORE_COUNT).fill('');
   newRow[COL.PRODUCT_ID - 1] = productId;
   newRow[COL.NAME - 1] = name;
   newRow[COL.CAPACITY - 1] = capacity;
@@ -66,6 +66,7 @@ function showAddDialog() {
   newRow[COL.CONSECUTIVE_FAIL_COUNT - 1] = scrapeResult.error ? 1 : 0;
   newRow[COL.STATUS - 1] = scrapeResult.error ? STATUS_ERROR :
     determineStatus(scrapeResult.price, targetPrice, getConfigValue('price_threshold_pct') || 10);
+  newRow[COL.STORE_COUNT - 1] = scrapeResult.storeCount !== null ? scrapeResult.storeCount : '';
 
   sheet.appendRow(newRow);
 

@@ -174,18 +174,20 @@ function fixProducts() {
     if (replacements[pid]) {
       const r = replacements[pid];
       const rowNum = i + DATA_START_ROW;
-      sheet.getRange(rowNum, COL.PRODUCT_ID).setValue(r[0]);
-      sheet.getRange(rowNum, COL.NAME).setValue(r[1]);
-      sheet.getRange(rowNum, COL.KAKAKU_URL).setValue(r[2]);
-      sheet.getRange(rowNum, COL.TARGET_PRICE).setValue(r[3]);
-      // リセット
-      sheet.getRange(rowNum, COL.CURRENT_PRICE).setValue('');
-      sheet.getRange(rowNum, COL.LOWEST_PRICE).setValue('');
-      sheet.getRange(rowNum, COL.RECENT_AVG_PRICE).setValue('');
-      sheet.getRange(rowNum, COL.SHOP_NAME).setValue('');
-      sheet.getRange(rowNum, COL.SHOP_URL).setValue('');
-      sheet.getRange(rowNum, COL.CONSECUTIVE_FAIL_COUNT).setValue(0);
-      sheet.getRange(rowNum, COL.STATUS).setValue(STATUS_HIGH);
+      // 既存行の内容を複製してから差し替えフィールドのみ上書き（1回の setValues でAPI呼び出しを削減）
+      const updatedRow = data[i].slice();
+      updatedRow[COL.PRODUCT_ID - 1] = r[0];
+      updatedRow[COL.NAME - 1] = r[1];
+      updatedRow[COL.KAKAKU_URL - 1] = r[2];
+      updatedRow[COL.TARGET_PRICE - 1] = r[3];
+      updatedRow[COL.CURRENT_PRICE - 1] = '';
+      updatedRow[COL.LOWEST_PRICE - 1] = '';
+      updatedRow[COL.RECENT_AVG_PRICE - 1] = '';
+      updatedRow[COL.SHOP_NAME - 1] = '';
+      updatedRow[COL.SHOP_URL - 1] = '';
+      updatedRow[COL.CONSECUTIVE_FAIL_COUNT - 1] = 0;
+      updatedRow[COL.STATUS - 1] = STATUS_HIGH;
+      sheet.getRange(rowNum, 1, 1, updatedRow.length).setValues([updatedRow]);
       fixCount++;
     }
   }

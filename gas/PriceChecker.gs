@@ -18,6 +18,13 @@ function checkAllPrices() {
   const deals = [];
   const now = new Date();
 
+  // config をループ前に一度だけ読み込む
+  const thresholdPct = getConfigValue('price_threshold_pct') || 10;
+  const cooldownHours = getConfigValue('cooldown_hours') || 24;
+
+  // 異常値チェック用に履歴データを一括取得
+  const allHistoryData = historySheet.getDataRange().getValues();
+
   ss.toast('価格取得を開始します（' + total + '件）...', '価格取得', 3);
   Logger.log('=== 価格取得開始: ' + total + '件 ===');
 
@@ -55,7 +62,7 @@ function checkAllPrices() {
     }
 
     // 異常値チェック（30日平均 > 前回価格 の優先順で基準価格を決定）
-    const avgPrice = calcRecentAvgPrice(productId, historySheet);
+    const avgPrice = calcRecentAvgPriceFromData(productId, allHistoryData);
     const basePrice = (avgPrice !== null) ? avgPrice : prevPrice;
     if (basePrice && basePrice > 0) {
       const ratio = Math.abs(result.price - basePrice) / basePrice;
@@ -95,14 +102,12 @@ function checkAllPrices() {
     historySheet.appendRow([productId, now, result.price, 'kakaku.com']);
 
     // ステータス判定
-    const thresholdPct = getConfigValue('price_threshold_pct') || 10;
     const status = determineStatus(result.price, targetPrice, thresholdPct);
     sheet.getRange(rowNum, COL.STATUS).setValue(status);
     Logger.log('  ✓ ¥' + result.price + ' [' + status + ']');
 
     // 買い時通知チェック
     if (status === STATUS_BUY) {
-      const cooldownHours = getConfigValue('cooldown_hours') || 24;
       if (isCooldownExpired(lastNotified, cooldownHours, now)) {
         deals.push({
           name, capacity, currentPrice: result.price, targetPrice,
@@ -144,10 +149,18 @@ function isCooldownExpired(lastNotified, cooldownHours, now) {
 }
 
 /**
- * 直近30日の平均価格を計算する
+ * 直近30日の平均価格を計算する（シートオブジェクトを受け取る版）
+ * ※ ループ外で historySheet.getDataRange().getValues() を一括取得できない場合に使用
  */
 function calcRecentAvgPrice(productId, historySheet) {
-  const data = historySheet.getDataRange().getValues();
+  return calcRecentAvgPriceFromData(productId, historySheet.getDataRange().getValues());
+}
+
+/**
+ * 直近30日の平均価格を計算する（事前取得済みデータ配列を受け取る版）
+ * checkAllPrices 内ではこちらを使ってシート読み込みを1回に抑える
+ */
+function calcRecentAvgPriceFromData(productId, data) {
   const thirtyDaysAgo = new Date();
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
   let sum = 0;
