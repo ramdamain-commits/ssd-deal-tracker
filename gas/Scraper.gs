@@ -29,7 +29,7 @@ function scrapeKakakuPrice(kakakuUrl) {
       return { price: null, shopName: null, shopUrl: null, storeCount: null, error: 'HTTP ' + statusCode };
     }
 
-    const html = response.getContentText();
+    const html = response.getContentText('Shift_JIS');
     return parseKakakuHtml(html, kakakuUrl);
   } catch (e) {
     return { price: null, shopName: null, shopUrl: null, storeCount: null, error: e.message };
@@ -83,96 +83,19 @@ function parseKakakuHtml(html, baseUrl) {
 
   // --- 出品店舗数を抽出 ---
   let storeCount = null;
-  // 優先1: JSON-LD の offerCount
-  const offerCountMatch = html.match(/"offerCount"\s*:\s*"?(\d+)"?/);
-  if (offerCountMatch) {
-    storeCount = parseInt(offerCountMatch[1], 10);
+  // 優先1: 「(N件/N店舗)」パターン（p-headline_sub 内）
+  const storeShopMatch = html.match(/(\d+)件\/(\d+)店舗/);
+  if (storeShopMatch) {
+    storeCount = parseInt(storeShopMatch[2], 10);
   }
-  // 優先2: 「XX店の価格を見る」パターン
+  // 優先2: JSON-LD の offerCount（現時点では価格.comは出力していないがフォールバック）
   if (!storeCount) {
-    const storeTextMatch = html.match(/(\d+)\s*店の価格/);
-    if (storeTextMatch) {
-      storeCount = parseInt(storeTextMatch[1], 10);
+    const offerCountMatch = html.match(/"offerCount"\s*:\s*"?(\d+)"?/);
+    if (offerCountMatch) {
+      storeCount = parseInt(offerCountMatch[1], 10);
     }
   }
 
   return { price, shopName, shopUrl, storeCount, error: null };
 }
 
-// ===== デバッグ・テスト用関数 =====
-
-/**
- * 価格.com のHTMLを取得してログに出力する（パース確認用）
- */
-function debugFetchKakaku() {
-  const url = 'https://kakaku.com/item/K0001520655/';
-  const response = UrlFetchApp.fetch(url, buildFetchOptions());
-  Logger.log('Status: ' + response.getResponseCode());
-  const body = response.getContentText();
-  Logger.log('Body length: ' + body.length);
-
-  // パターン1: prdlprc JS変数
-  const p1 = body.match(/prdlprc[\s\S]{0,30}/);
-  Logger.log('P1 prdlprc: ' + (p1 ? p1[0] : 'NOT FOUND'));
-
-  // パターン2: lowPrice / lowestPrice 系
-  const p2 = body.match(/[Ll]ow[Pp]rice[\s\S]{0,50}/);
-  Logger.log('P2 lowPrice: ' + (p2 ? p2[0] : 'NOT FOUND'));
-
-  // パターン3: "price" を含むclass/id（最初の5件）
-  const p3 = body.match(/[cC]lass="[^"]*[pP]rice[^"]*"/g);
-  Logger.log('P3 price classes: ' + (p3 ? p3.slice(0, 5).join(' | ') : 'NOT FOUND'));
-
-  // パターン4: 5桁以上のカンマ区切り数字（価格候補）の周辺
-  const p4 = body.match(/.{0,40}(\d{1,3},\d{3})\s*円.{0,20}/g);
-  Logger.log('P4 price-yen: ' + (p4 ? p4.slice(0, 3).join(' | ') : 'NOT FOUND'));
-
-  // パターン5: カンマ区切り数字＋波線（~）
-  const p5 = body.match(/.{0,40}\d{1,3},\d{3}\s*~.{0,20}/g);
-  Logger.log('P5 price-tilde: ' + (p5 ? p5.slice(0, 3).join(' | ') : 'NOT FOUND'));
-
-  // パターン6: forwarder リンク
-  const p6 = body.match(/forwarder\/forward\.aspx[\s\S]{0,200}/);
-  Logger.log('P6 forwarder: ' + (p6 ? p6[0] : 'NOT FOUND'));
-
-  // パターン7: 製品ページのJSON-LD（構造化データ）
-  const p7 = body.match(/"@type"\s*:\s*"Product"[\s\S]{0,500}/);
-  Logger.log('P7 JSON-LD Product: ' + (p7 ? p7[0].substring(0, 300) : 'NOT FOUND'));
-
-  // パターン8: "offers" / "lowPrice" in JSON-LD
-  const p8 = body.match(/"lowPrice"[\s\S]{0,50}/);
-  Logger.log('P8 JSON-LD lowPrice: ' + (p8 ? p8[0] : 'NOT FOUND'));
-
-  // パターン9: priceTxt クラス（2025年時点の報告あり）
-  const p9 = body.match(/class="priceTxt"[\s\S]{0,100}/);
-  Logger.log('P9 priceTxt: ' + (p9 ? p9[0] : 'NOT FOUND'));
-
-  // パターン10: window.__DATA__ 等の JS 埋め込みデータ
-  const p10 = body.match(/__NEXT_DATA__|window\.__.*?=\s*\{[\s\S]{0,200}/);
-  Logger.log('P10 window data: ' + (p10 ? p10[0].substring(0, 200) : 'NOT FOUND'));
-
-  // パターン11: application/json type の script タグ
-  const p11 = body.match(/application\/json[\s\S]{0,300}/);
-  Logger.log('P11 json script: ' + (p11 ? p11[0].substring(0, 200) : 'NOT FOUND'));
-
-  // HTML先頭200文字（ボット検知リダイレクト確認）
-  Logger.log('HTML head: ' + body.substring(0, 200));
-}
-
-/**
- * スクレイパーの動作テスト
- */
-function testScraper() {
-  const result = scrapeKakakuPrice('https://kakaku.com/item/K0001520655/');
-  Logger.log(JSON.stringify(result, null, 2));
-  // 期待: { price: (正の数値), shopName: (文字列), shopUrl: (URL), error: null }
-}
-
-/**
- * 不正なURLでのエラーハンドリングテスト
- */
-function testScraperInvalidUrl() {
-  const result = scrapeKakakuPrice('https://kakaku.com/item/INVALID_ID_12345/');
-  Logger.log(JSON.stringify(result, null, 2));
-  // 期待: error が null でない文字列
-}

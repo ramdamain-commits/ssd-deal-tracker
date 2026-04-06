@@ -61,25 +61,8 @@ function checkAllPrices() {
       continue;
     }
 
-    // 異常値チェック（30日平均 > 前回価格 の優先順で基準価格を決定）
+    // 30日平均を計算（RECENT_AVG_PRICE 更新用）
     const avgPrice = calcRecentAvgPriceFromData(productId, allHistoryData);
-    const basePrice = (avgPrice !== null) ? avgPrice : prevPrice;
-    if (basePrice && basePrice > 0) {
-      const ratio = Math.abs(result.price - basePrice) / basePrice;
-      if (ratio > PRICE_ANOMALY_RATIO) {
-        const baseLabel = (avgPrice !== null) ? '30日平均¥' + Math.round(avgPrice) : '前回¥' + prevPrice;
-        const newFailCount = consecutiveFails + 1;
-        sheet.getRange(rowNum, COL.CONSECUTIVE_FAIL_COUNT).setValue(newFailCount);
-        sheet.getRange(rowNum, COL.STATUS).setValue(STATUS_ERROR);
-        sheet.getRange(rowNum, COL.LAST_CHECKED).setValue(now);
-        errors.push({
-          name, capacity,
-          error: '異常値検出: ' + baseLabel + ' → ¥' + result.price + ' (変動率' + Math.round(ratio * 100) + '%)',
-          failCount: newFailCount
-        });
-        continue;
-      }
-    }
 
     // 正常取得 → Spreadsheet 更新
     sheet.getRange(rowNum, COL.CURRENT_PRICE).setValue(result.price);
