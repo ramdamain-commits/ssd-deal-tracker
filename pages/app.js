@@ -168,16 +168,27 @@ function renderChart(products, priceHistory) {
   const colors = ['#1a237e','#c62828','#2e7d32','#ff6f00','#6a1b9a','#00838f','#4e342e','#546e7a','#ad1457','#1565c0','#e65100','#00695c','#283593','#9e9d24'];
   const datasets = [];
 
+  // 全製品の日付を収集してソート済みラベルを生成
+  var allDates = {};
+  products.forEach(function(p) {
+    (priceHistory[p.product_id] || []).forEach(function(h) { allDates[h.date] = true; });
+  });
+  var labels = Object.keys(allDates).sort();
+
   products.forEach(function(p, i) {
-    const history = priceHistory[p.product_id] || [];
+    var history = priceHistory[p.product_id] || [];
     if (history.length === 0) return;
+    // 日付→価格のマップを作成
+    var priceMap = {};
+    history.forEach(function(h) { priceMap[h.date] = h.price; });
     datasets.push({
       label: p.name,
-      data: history.map(function(h) { return { x: h.date, y: h.price }; }),
+      data: labels.map(function(d) { return priceMap[d] || null; }),
       borderColor: colors[i % colors.length],
       fill: false,
       tension: 0.3,
       pointRadius: 2,
+      spanGaps: true,
     });
   });
 
@@ -185,7 +196,7 @@ function renderChart(products, priceHistory) {
 
   new Chart(ctx, {
     type: 'line',
-    data: { datasets: datasets },
+    data: { labels: labels, datasets: datasets },
     options: {
       responsive: true,
       maintainAspectRatio: !isMobile,
