@@ -13,11 +13,9 @@ const STATUS_BADGE = {
 // 追跡対象外のブランドは 'other' を返す。
 function detectBrand(name) {
   const n = name.toLowerCase();
-  if (n.includes('samsung')) return 'samsung';
   if (n.includes('wd') || n.includes('wd_black') || n.includes('western')) return 'wd';
   if (n.includes('crucial')) return 'crucial';
   if (n.includes('kioxia') || n.includes('exceria')) return 'kioxia';
-  if (n.includes('adata') || n.includes('xpg') || n.includes('legend')) return 'adata';
   return 'other';
 }
 
@@ -34,7 +32,6 @@ function normalizeStatusForFilter(status) {
 var filterState = (function () {
   var params = new URLSearchParams(location.search);
   return {
-    capacity: params.get('capacity') || 'all',
     brand:    params.get('brand')    || 'all',
     status:   params.get('status')   || 'all',
   };
@@ -43,7 +40,6 @@ var filterState = (function () {
 // URLパラメータを現在のフィルタ状態に同期する（履歴は pushState で積まない）
 function syncUrl() {
   var params = new URLSearchParams();
-  if (filterState.capacity !== 'all') params.set('capacity', filterState.capacity);
   if (filterState.brand    !== 'all') params.set('brand',    filterState.brand);
   if (filterState.status   !== 'all') params.set('status',   filterState.status);
   var qs = params.toString();
@@ -67,10 +63,9 @@ function applyFilter() {
   var visibleCount = 0;
 
   cards.forEach(function (card) {
-    var matchCapacity = filterState.capacity === 'all' || card.dataset.capacity === filterState.capacity;
     var matchBrand    = filterState.brand    === 'all' || card.dataset.brand    === filterState.brand;
     var matchStatus   = filterState.status   === 'all' || card.dataset.status   === filterState.status;
-    var visible       = matchCapacity && matchBrand && matchStatus;
+    var visible       = matchBrand && matchStatus;
 
     card.style.display = visible ? '' : 'none';
     if (visible) visibleCount++;

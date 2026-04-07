@@ -76,3 +76,64 @@ function markMigrationDone(funcName) {
 // setupSheets, seedProducts, fixProducts, updateProducts2026,
 // maintenance202604, migration202604b, migration202604c, migration202604d
 // → 全て実行済み。config シートにフラグあり。
+
+/**
+ * v1.2.0 ラインナップ見直し (2026-04-07)
+ * - 2TB 全4製品 + 高額1TB 4製品 + ADATA 1製品 = 9製品を削除
+ * - 残り5製品の target_price を市場価格の90%に更新
+ */
+function migration202604e() {
+  if (isMigrationDone('migration202604e')) {
+    Logger.log('migration202604e は実行済みです');
+    return;
+  }
+
+  var sheet = getSheet(SHEET_PRODUCTS);
+  var lastRow = sheet.getLastRow();
+  var data = sheet.getRange(DATA_START_ROW, 1, lastRow - HEADER_ROW, COL.STORE_COUNT).getValues();
+
+  // 削除対象の product_id
+  var deleteIds = [
+    'samsung-990-pro-hs-2tb',
+    'wd-black-sn850p-2tb',
+    'crucial-t500-hs-2tb',
+    'samsung-9100-pro-hs-2tb',
+    'samsung-990-pro-hs-1tb',
+    'wd-black-sn850x-hs-1tb',
+    'samsung-9100-pro-1tb',
+    'samsung-990-pro-1tb',
+    'adata-legend-960-1tb',
+  ];
+
+  // target_price 更新マップ
+  var priceUpdates = {
+    'crucial-t500-hs-1tb': 25900,
+    'crucial-t500-1tb': 26400,
+    'kioxia-exceria-plus-g3-1tb': 25300,
+    'kioxia-exceria-plus-g4-1tb': 27800,
+    'wd-black-sn7100-1tb': 29000,
+  };
+
+  // 下から順に削除（行番号ズレ防止）
+  for (var i = data.length - 1; i >= 0; i--) {
+    var productId = data[i][COL.PRODUCT_ID - 1];
+    if (deleteIds.indexOf(productId) !== -1) {
+      sheet.deleteRow(i + DATA_START_ROW);
+      Logger.log('削除: ' + productId);
+    }
+  }
+
+  // target_price 更新（削除後に再取得）
+  lastRow = sheet.getLastRow();
+  data = sheet.getRange(DATA_START_ROW, 1, lastRow - HEADER_ROW, COL.STORE_COUNT).getValues();
+  for (var j = 0; j < data.length; j++) {
+    var pid = data[j][COL.PRODUCT_ID - 1];
+    if (priceUpdates[pid] !== undefined) {
+      sheet.getRange(j + DATA_START_ROW, COL.TARGET_PRICE).setValue(priceUpdates[pid]);
+      Logger.log('更新: ' + pid + ' → ¥' + priceUpdates[pid]);
+    }
+  }
+
+  markMigrationDone('migration202604e');
+  Logger.log('migration202604e 完了: 9製品削除、5製品の target_price 更新');
+}

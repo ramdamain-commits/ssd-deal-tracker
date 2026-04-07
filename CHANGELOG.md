@@ -2,6 +2,22 @@
 
 このプロジェクトの主な変更履歴を記録する。
 
+## v1.2.0 — ラインナップ見直し・フィルタ整理 (2026-04-07)
+
+### Changed
+- 追跡対象を14製品→5製品に絞り込み（1TB・3万円以下に集中）
+- 残り5製品の target_price を市場価格の90%に更新
+- メーカーフィルタから Samsung・ADATA を削除
+
+### Removed
+- 2TB 全4製品（Samsung 990 PRO HS / WD SN850P / Crucial T500 HS / Samsung 9100 PRO HS）
+- 高額1TB 4製品（Samsung 990 PRO HS / WD SN850X HS / Samsung 9100 PRO / Samsung 990 PRO）
+- ADATA LEGEND 960 1TB（1店舗のみ）
+- 容量フィルタ（全製品1TBのため不要に）
+
+### Fixed
+- 前回セッション分: Shift_JIS デコード修正、店舗数パース修正、異常値検出削除、コード整理(-413行)、チャート日付ソート修正
+
 ## 2026-03-29
 
 ### Changed

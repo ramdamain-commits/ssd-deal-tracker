@@ -1,46 +1,72 @@
 {
-  "updated_at": "2026-03-18T20:00:00+09:00",
+  "updated_at": "2026-04-07T20:00:00+09:00",
   "products": [
     {
-      "product_id": "wd-black-sn850x-1tb", "name": "WD_BLACK SN850X", "capacity": "1TB",
-      "current_price": 12800, "target_price": 11000, "lowest_price": 10500,
-      "recent_avg_price": 13200, "status": "もう少し",
-      "kakaku_url": "https://kakaku.com/item/K0001520655/",
+      "product_id": "crucial-t500-hs-1tb", "name": "Crucial T500 with Heatsink", "capacity": "1TB",
+      "current_price": 28800, "target_price": 25900, "lowest_price": 28800,
+      "recent_avg_price": 29500, "status": "高め",
+      "kakaku_url": "https://kakaku.com/item/K0001588763/",
+      "shop_url": "https://example.com", "shop_name": "ドスパラ",
+      "last_checked": "2026-04-07T20:00:00+09:00"
+    },
+    {
+      "product_id": "crucial-t500-1tb", "name": "Crucial T500", "capacity": "1TB",
+      "current_price": 29280, "target_price": 26400, "lowest_price": 29280,
+      "recent_avg_price": 30000, "status": "高め",
+      "kakaku_url": "https://kakaku.com/item/K0001588761/",
+      "shop_url": "https://example.com", "shop_name": "パソコン工房",
+      "last_checked": "2026-04-07T20:00:00+09:00"
+    },
+    {
+      "product_id": "kioxia-exceria-plus-g3-1tb", "name": "KIOXIA EXCERIA PLUS G3", "capacity": "1TB",
+      "current_price": 28105, "target_price": 25300, "lowest_price": 28105,
+      "recent_avg_price": 29000, "status": "高め",
+      "kakaku_url": "https://kakaku.com/item/K0001579414/",
       "shop_url": "https://example.com", "shop_name": "Amazon.co.jp",
-      "last_checked": "2026-03-18T20:00:00+09:00"
+      "last_checked": "2026-04-07T20:00:00+09:00"
     },
     {
-      "product_id": "samsung-990-pro-1tb", "name": "Samsung 990 PRO", "capacity": "1TB",
-      "current_price": 10500, "target_price": 11000, "lowest_price": 10500,
-      "recent_avg_price": 12000, "status": "買い時",
-      "kakaku_url": "https://kakaku.com/item/K0001234567/",
-      "shop_url": "https://example.com", "shop_name": "ヨドバシ.com",
-      "last_checked": "2026-03-18T20:00:00+09:00"
+      "product_id": "kioxia-exceria-plus-g4-1tb", "name": "KIOXIA EXCERIA PLUS G4", "capacity": "1TB",
+      "current_price": 30862, "target_price": 27800, "lowest_price": 30862,
+      "recent_avg_price": 31500, "status": "高め",
+      "kakaku_url": "https://kakaku.com/item/K0001672715/",
+      "shop_url": "https://example.com", "shop_name": "ドスパラ",
+      "last_checked": "2026-04-07T20:00:00+09:00"
     },
     {
-      "product_id": "crucial-t500-hs-2tb", "name": "Crucial T500 with Heatsink", "capacity": "2TB",
-      "current_price": 21380, "target_price": 20000, "lowest_price": 19800,
-      "recent_avg_price": 22500, "status": "もう少し",
-      "kakaku_url": "https://kakaku.com/item/K0001588764/",
-      "shop_url": "https://example.com", "shop_name": "ツクモ",
-      "last_checked": "2026-03-18T20:00:00+09:00"
+      "product_id": "wd-black-sn7100-1tb", "name": "WD_BLACK SN7100", "capacity": "1TB",
+      "current_price": 32250, "target_price": 29000, "lowest_price": 32250,
+      "recent_avg_price": 33000, "status": "高め",
+      "kakaku_url": "https://kakaku.com/item/K0001673419/",
+      "shop_url": "https://example.com", "shop_name": "Amazon.co.jp",
+      "last_checked": "2026-04-07T20:00:00+09:00"
     }
   ],
   "price_history": {
-    "wd-black-sn850x-1tb": [
-      { "date": "2026-03-01", "price": 13500 },
-      { "date": "2026-03-10", "price": 13200 },
-      { "date": "2026-03-18", "price": 12800 }
+    "crucial-t500-hs-1tb": [
+      { "date": "2026-03-18", "price": 12500 },
+      { "date": "2026-04-01", "price": 25000 },
+      { "date": "2026-04-07", "price": 28800 }
     ],
-    "samsung-990-pro-1tb": [
-      { "date": "2026-03-01", "price": 12000 },
-      { "date": "2026-03-10", "price": 11200 },
-      { "date": "2026-03-18", "price": 10500 }
+    "crucial-t500-1tb": [
+      { "date": "2026-03-18", "price": 12000 },
+      { "date": "2026-04-01", "price": 26000 },
+      { "date": "2026-04-07", "price": 29280 }
     ],
-    "crucial-t500-hs-2tb": [
-      { "date": "2026-03-01", "price": 23000 },
-      { "date": "2026-03-10", "price": 22100 },
-      { "date": "2026-03-18", "price": 21380 }
+    "kioxia-exceria-plus-g3-1tb": [
+      { "date": "2026-03-18", "price": 13000 },
+      { "date": "2026-04-01", "price": 24000 },
+      { "date": "2026-04-07", "price": 28105 }
+    ],
+    "kioxia-exceria-plus-g4-1tb": [
+      { "date": "2026-03-18", "price": 15000 },
+      { "date": "2026-04-01", "price": 27000 },
+      { "date": "2026-04-07", "price": 30862 }
+    ],
+    "wd-black-sn7100-1tb": [
+      { "date": "2026-03-18", "price": 15000 },
+      { "date": "2026-04-01", "price": 28000 },
+      { "date": "2026-04-07", "price": 32250 }
     ]
   }
 }

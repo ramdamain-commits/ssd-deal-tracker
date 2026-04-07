@@ -8,6 +8,8 @@ function onOpen() {
     .addItem('バリデーション実行', 'runValidation')
     .addSeparator()
     .addItem('今すぐ価格取得', 'checkAllPrices')
+    .addSeparator()
+    .addItem('v1.2.0 ラインナップ見直し', 'migration202604e')
     .addToUi();
 }
 
