@@ -287,7 +287,7 @@ function sendDailySummary() {
   normalItems.sort(function(a, b) { return (statusOrder[a.status] || 9) - (statusOrder[b.status] || 9); });
 
   for (const it of normalItems) {
-    const icon = it.status === STATUS_BUY ? '🔥' : (it.status === STATUS_ALMOST ? '👀' : '  ');
+    const icon = it.status === STATUS_BUY ? '★' : (it.status === STATUS_ALMOST ? '▶' : ' ');
     lines.push(icon + ' [' + it.status + '] ' + it.name + ' (' + it.capacity + ')');
     let storeLine = '  現在: ¥' + it.currentPrice.toLocaleString() + ' / 目標: ¥' + it.targetPrice.toLocaleString() + ' / 最安記録: ¥' + (it.lowestPrice ? it.lowestPrice.toLocaleString() : '---');
     if (it.storeCount) storeLine += ' / ' + it.storeCount + '店';
