@@ -3,6 +3,7 @@
 - 親 `C:\Users\ramda\projects\CLAUDE.md` を先に適用する
 - 現行仕様の正本は `README.md` + `CHANGELOG.md`。初期設計の経緯は `docs/superpowers/specs/2026-03-18-ssd-deal-tracker-design.md` を参照
 - GAS コードは clasp push でデプロイ。コミット後は `clasp push` もセットで実行する
+- **GAS 再デプロイでデプロイ ID が変わったら**: (1) `pages/app.js` の API_URL を更新、(2) portal の SSD ウィジェット JS（`index.html` 内 `initSsdWidget` の `API_URL`）を更新、(3) `setting/scripts/Invoke-DeploySmokeTest.ps1` の allowedPatterns を更新
 - 文字コードは UTF-8
 
 ## スクレイピング
