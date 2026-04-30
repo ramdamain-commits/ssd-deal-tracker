@@ -137,3 +137,48 @@ function migration202604e() {
   markMigrationDone('migration202604e');
   Logger.log('migration202604e 完了: 9製品削除、5製品の target_price 更新');
 }
+
+/**
+ * v1.3.0 ターゲット価格を「正常化アンカー」基準に変更 (2026-04-30)
+ *
+ * 背景:
+ * - migration202604e は「市場価格の90%」基準だったが、NAND高騰中(2026Q2予測 +70〜75%)に
+ *   高値追随する設計になっていた。ユーザー意図は「正常化したら買う」基準。
+ * - 2024〜2025年5月の底値帯(Gen4主流1TB ¥9,000〜10,000台、高速Gen4/Gen5 ¥12,000〜13,000台)を
+ *   アンカーに再設定する。
+ *
+ * 注意（2026-10 に再レビュー予定）:
+ * - kioxia-exceria-plus-g4-1tb と wd-black-sn7100-1tb は新型で2024-2025の底値が
+ *   観測されていない。旧世代(G3, SN770)からの類推で設定した「推定アンカー」。
+ * - 当面1〜2年は全製品 NORMAL のままになる可能性が高い(=高騰相場で買わせない設計)。
+ */
+function migration202604f() {
+  if (isMigrationDone('migration202604f')) {
+    Logger.log('migration202604f は実行済みです');
+    return;
+  }
+
+  var sheet = getSheet(SHEET_PRODUCTS);
+  var lastRow = sheet.getLastRow();
+  var data = sheet.getRange(DATA_START_ROW, 1, lastRow - HEADER_ROW, COL.STORE_COUNT).getValues();
+
+  // target_price 更新マップ（正常化アンカー基準）
+  var priceUpdates = {
+    'crucial-t500-hs-1tb': 12500,        // 2024年特価帯 ¥12,100〜12,700
+    'crucial-t500-1tb': 12500,           // 同上
+    'kioxia-exceria-plus-g3-1tb': 10000, // Gen4主流底値 ¥9,000〜10,000台
+    'kioxia-exceria-plus-g4-1tb': 12500, // 推定アンカー（新型・2026-10再レビュー）
+    'wd-black-sn7100-1tb': 11500,        // 推定アンカー（SN770類推・2026-10再レビュー）
+  };
+
+  for (var j = 0; j < data.length; j++) {
+    var pid = data[j][COL.PRODUCT_ID - 1];
+    if (priceUpdates[pid] !== undefined) {
+      sheet.getRange(j + DATA_START_ROW, COL.TARGET_PRICE).setValue(priceUpdates[pid]);
+      Logger.log('更新: ' + pid + ' → ¥' + priceUpdates[pid]);
+    }
+  }
+
+  markMigrationDone('migration202604f');
+  Logger.log('migration202604f 完了: 5製品の target_price を正常化アンカーに更新');
+}
