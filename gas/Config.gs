@@ -182,3 +182,36 @@ function migration202604f() {
   markMigrationDone('migration202604f');
   Logger.log('migration202604f 完了: 5製品の target_price を正常化アンカーに更新');
 }
+
+/**
+ * v1.3.1 Crucial T500 1TB（HSなし）を追跡対象から削除 (2026-05-08)
+ *
+ * 背景:
+ * - 2026-05時点で価格.com の取扱店舗ゼロ（prdlprc: 0）。13日連続で取得失敗
+ * - HTML構造変更ではなく「現在価格情報の登録がありません」状態
+ * - NAND高騰でメーカーがヒートシンク付き(crucial-t500-hs-1tb)に在庫を絞った可能性
+ * - HSあり版で代替可能なため追跡対象から除外
+ */
+function migration202605a() {
+  if (isMigrationDone('migration202605a')) {
+    Logger.log('migration202605a は実行済みです');
+    return;
+  }
+
+  var sheet = getSheet(SHEET_PRODUCTS);
+  var lastRow = sheet.getLastRow();
+  var data = sheet.getRange(DATA_START_ROW, 1, lastRow - HEADER_ROW, COL.STORE_COUNT).getValues();
+
+  var deleteIds = ['crucial-t500-1tb'];
+
+  for (var i = data.length - 1; i >= 0; i--) {
+    var productId = data[i][COL.PRODUCT_ID - 1];
+    if (deleteIds.indexOf(productId) !== -1) {
+      sheet.deleteRow(i + DATA_START_ROW);
+      Logger.log('削除: ' + productId);
+    }
+  }
+
+  markMigrationDone('migration202605a');
+  Logger.log('migration202605a 完了: crucial-t500-1tb を削除（4製品体制）');
+}
