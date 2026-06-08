@@ -2,6 +2,17 @@
 
 このプロジェクトの主な変更履歴を記録する。
 
+## v1.3.2 — 日次サマリーメールを無効化（週次のみ受信） (2026-06-08)
+
+### Changed
+- `sendDailySummary()` を無効化。価格レポートメールは週次（`sendWeeklySummary`）のみ受信する
+- `Config.gs` にフラグ定数 `DAILY_SUMMARY_ENABLED = false` を追加。`sendDailySummary` 冒頭で早期リターンする安全装置を入れ、GASの日次トリガーを消し忘れてもメールが飛ばないようにした
+
+### Notes
+- 買い時即時通知（`sendDealNotifications`）と週次レポートは従来どおり継続
+- GASエディタの `sendDailySummary` 時間トリガーは無駄実行を避けるため手動削除を推奨（削除しなくてもメールは飛ばない）
+- 日次を再開したい場合は `DAILY_SUMMARY_ENABLED = true` に戻して clasp push
+
 ## v1.3.1 — Crucial T500 1TB（HSなし）を追跡対象から削除 (2026-05-08)
 
 ### Removed

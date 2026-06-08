@@ -56,6 +56,12 @@ PS5対応SSD 5機種（1TB）の価格を自動追跡し、目標価格を下回
 2. 関数: `checkAllPrices` / 時間主導型 / 日付ベース / 午前9時〜10時
 3. 同様にもう1つ: 午後8時〜9時
 
+#### 通知メール
+
+- 買い時即時通知（`sendDealNotifications`）: 目標価格を下回ったら `checkAllPrices` 内から送信
+- 週次レポート（`sendWeeklySummary`）: 毎週の時間トリガーで送信
+- 日次サマリー（`sendDailySummary`）: **無効化中**（`Config.gs` の `DAILY_SUMMARY_ENABLED = false`）。再開する場合は `true` に戻す。GASの日次トリガーは手動削除推奨（残してもメールは飛ばない）
+
 ### 5. GitHub Pages 有効化
 
 1. リポジトリの Settings → Pages

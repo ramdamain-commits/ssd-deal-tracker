@@ -34,6 +34,10 @@ const DATA_START_ROW = 2;
 const CONSECUTIVE_FAIL_ALERT_THRESHOLD = 3;
 const LOW_STORE_COUNT_THRESHOLD = 3; // これ以下の店舗数は信頼性が低い
 
+// 日次サマリーメールの有効/無効（2026-06-08: ユーザー要望で無効化＝週次のみ受信）
+// ※ GAS の sendDailySummary 時間トリガーを消し忘れても、false の間はメールが飛ばない安全装置
+const DAILY_SUMMARY_ENABLED = false;
+
 // ===== ヘルパー =====
 function getSpreadsheet() {
   return SpreadsheetApp.getActiveSpreadsheet();

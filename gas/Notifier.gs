@@ -220,6 +220,12 @@ function classifyTrend(changeRate, currentPrice, targetPrice) {
  * 全製品の価格状況 + エラーがあればまとめて1通で送る
  */
 function sendDailySummary() {
+  // 安全装置: 日次サマリーは無効化中（週次のみ受信）。トリガー消し忘れでもメールを飛ばさない
+  if (!DAILY_SUMMARY_ENABLED) {
+    Logger.log('sendDailySummary: DAILY_SUMMARY_ENABLED=false のためスキップ');
+    return;
+  }
+
   const notifyEmail = getConfigValue('notify_email');
   if (!notifyEmail) return;
 
