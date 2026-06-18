@@ -10,7 +10,27 @@ function onOpen() {
     .addItem('今すぐ価格取得', 'checkAllPrices')
     .addSeparator()
     .addItem('v1.2.0 ラインナップ見直し', 'migration202604e')
+    .addItem('日次サマリーの孤児トリガー削除', 'deleteDailySummaryTrigger')
     .addToUi();
+}
+
+/**
+ * 無効化済み sendDailySummary の時間トリガーが残っていれば削除する。
+ * DAILY_SUMMARY_ENABLED=false の安全装置とは別に、孤児トリガー自体を掃除する。
+ */
+function deleteDailySummaryTrigger() {
+  const ui = SpreadsheetApp.getUi();
+  const triggers = ScriptApp.getProjectTriggers();
+  let removed = 0;
+  for (const t of triggers) {
+    if (t.getHandlerFunction() === 'sendDailySummary') {
+      ScriptApp.deleteTrigger(t);
+      removed++;
+    }
+  }
+  ui.alert(removed > 0
+    ? 'sendDailySummary のトリガーを ' + removed + ' 件削除しました'
+    : 'sendDailySummary のトリガーは見つかりませんでした（既に削除済み）');
 }
 
 /**
