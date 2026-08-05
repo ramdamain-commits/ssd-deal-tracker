@@ -2,7 +2,8 @@
 
 - 親 `C:\Users\ramda\projects\CLAUDE.md` を先に適用する
 - 現行仕様の正本は `README.md` + `CHANGELOG.md`。初期設計の経緯は `docs/superpowers/specs/2026-03-18-ssd-deal-tracker-design.md` を参照
-- GAS コードは clasp push でデプロイ。コミット後は `clasp push` もセットで実行する
+- 構成: GAS バックエンド（`gas/*.gs`）が `WebApp.gs` の `doGet` で products / price_history を JSON API として公開し、静的フロントエンド（`pages/app.js`）が fetch して表示する。同じ API はもう1箇所、別 repo の portal（`../portal/index.html` 内 `initSsdWidget`）からも fetch されている（repo をまたぐ依存）
+- GAS コードは clasp push でデプロイ。コミット後は `cd gas && npx @google/clasp push` もセットで実行する
 - **GAS 再デプロイでデプロイ ID が変わったら**: (1) `pages/app.js` の API_URL を更新、(2) portal の SSD ウィジェット JS（`index.html` 内 `initSsdWidget` の `API_URL`）を更新、(3) `setting/scripts/Invoke-DeploySmokeTest.ps1` の allowedPatterns を更新
 - 文字コードは UTF-8
 
@@ -16,7 +17,7 @@
 
 - 過去のマイグレーション関数（setupSheets〜migration202604d）は全て実行済み・コードから削除済み。config シートにフラグのみ残る
 - 次回ラインナップ更新時は新しいマイグレーション関数を追加する
-- マイグレーション関数を書くときは `setupSheets()` のデフォルト値やフォールバック値（`|| N`）も全箇所更新すること
+- マイグレーション関数を書くときはデフォルト値やフォールバック値（`|| N`）も全箇所更新すること（`gas/*.gs` を `|| ` で grep して洗い出す）
 - マイグレーション関数にはヘッダー追加・フラグ登録など付随作業も含め、手動作業ゼロで完結させる
 
 ## 通知メール
