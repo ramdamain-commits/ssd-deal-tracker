@@ -2,6 +2,18 @@
 
 このプロジェクトの主な変更履歴を記録する。
 
+## v1.4.0 — 追跡を停止（TRACKING_ENABLED フラグ） (2026-10-19)
+
+### Changed
+- NAND高騰で価格が上がり続け追跡の意味が薄いため、価格取得とメール送信を停止。`Config.gs` に `TRACKING_ENABLED = false` を追加し、`checkAllPrices` と `sendWeeklySummary` の冒頭で早期リターンする（`DAILY_SUMMARY_ENABLED` と同じ安全装置方式）。GAS の時間トリガーが残っていても取得・メールは動かない
+
+### Added
+- カスタムメニュー「SSD管理」に「全トリガー削除（停止）」を追加。`deleteAllTriggers()` が `checkAllPrices` / `sendWeeklySummary` / `sendDailySummary` の時間トリガーをまとめて削除する
+
+### Notes
+- repo・GitHub Pages・WebApp（doGet）は残し、最後に取得したデータを表示したままにする
+- 再開: `TRACKING_ENABLED = true` にして clasp push、時間トリガーを再設定
+
 ## v1.3.3 — 日次サマリー孤児トリガー削除メニューを追加 (2026-06-18)
 
 ### Added

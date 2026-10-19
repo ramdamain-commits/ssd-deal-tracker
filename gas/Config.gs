@@ -38,6 +38,11 @@ const LOW_STORE_COUNT_THRESHOLD = 3; // これ以下の店舗数は信頼性が�
 // ※ GAS の sendDailySummary 時間トリガーを消し忘れても、false の間はメールが飛ばない安全装置
 const DAILY_SUMMARY_ENABLED = false;
 
+// 価格取得・通知メール全体の有効/無効（2026-10-19: NAND高騰で価格が上がり続けるため停止）
+// ※ GAS の時間トリガーを消し忘れても、false の間は価格取得（checkAllPrices）と週次メールが動かない安全装置
+// 再開は true に戻して clasp push、時間トリガーを再設定
+const TRACKING_ENABLED = false;
+
 // ===== ヘルパー =====
 function getSpreadsheet() {
   return SpreadsheetApp.getActiveSpreadsheet();

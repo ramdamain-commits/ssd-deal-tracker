@@ -23,6 +23,7 @@
 ## 通知メール
 
 - 通知メールの有効/無効は `Config.gs` のフラグ定数（例 `DAILY_SUMMARY_ENABLED`）で制御し、各送信関数の冒頭で早期リターンする。GASの時間トリガーはエディタUIの手動設定でコード管理外なので、トリガーを消し忘れてもフラグが false ならメールは飛ばない安全装置になる（2026-06-08 日次サマリー無効化で導入）
+- 追跡全体は `TRACKING_ENABLED`（2026-10-19 に false で停止）が `checkAllPrices` と `sendWeeklySummary` の冒頭で止める。再開は true にして clasp push、トリガー再設定。メニュー「全トリガー削除（停止）」でトリガー自体も消せる
 - メール送信関数: `sendDealNotifications`（買い時即時・`checkAllPrices`内）/ `sendWeeklySummary`（週次トリガー）/ `sendDailySummary`（無効化中）
 
 ## GAS 実行の注意

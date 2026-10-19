@@ -11,6 +11,7 @@ function onOpen() {
     .addSeparator()
     .addItem('v1.2.0 ラインナップ見直し', 'migration202604e')
     .addItem('日次サマリーの孤児トリガー削除', 'deleteDailySummaryTrigger')
+    .addItem('全トリガー削除（停止）', 'deleteAllTriggers')
     .addToUi();
 }
 
@@ -31,6 +32,25 @@ function deleteDailySummaryTrigger() {
   ui.alert(removed > 0
     ? 'sendDailySummary のトリガーを ' + removed + ' 件削除しました'
     : 'sendDailySummary のトリガーは見つかりませんでした（既に削除済み）');
+}
+
+/**
+ * このプロジェクトの全時間トリガー（checkAllPrices / sendWeeklySummary / sendDailySummary）を削除する。
+ * TRACKING_ENABLED=false の安全装置とは別に、トリガー自体を消して停止状態を完結させる。
+ */
+function deleteAllTriggers() {
+  const ui = SpreadsheetApp.getUi();
+  const targets = ['checkAllPrices', 'sendWeeklySummary', 'sendDailySummary'];
+  let removed = 0;
+  for (const t of ScriptApp.getProjectTriggers()) {
+    if (targets.includes(t.getHandlerFunction())) {
+      ScriptApp.deleteTrigger(t);
+      removed++;
+    }
+  }
+  ui.alert(removed > 0
+    ? '時間トリガーを ' + removed + ' 件削除しました（追跡を停止）'
+    : '対象の時間トリガーは見つかりませんでした（既に削除済み）');
 }
 
 /**

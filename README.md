@@ -1,5 +1,7 @@
 # PS5 SSD Deal Tracker
 
+> **2026-10-19 停止**（NAND高騰で価格が上がり続けるため）。再開は `gas/Config.gs` の `TRACKING_ENABLED=true` にして clasp push、GAS の時間トリガーを再設定。Pages と最後に取得したデータはそのまま表示される。
+
 PS5対応SSD 5機種（1TB）の価格を自動追跡し、目標価格を下回ったらメール通知するシステム。
 
 ## 機能

@@ -3,6 +3,11 @@
  * GAS トリガーから呼び出される
  */
 function checkAllPrices() {
+  // 安全装置: 追跡停止中は価格取得・通知をしない（トリガー消し忘れ対策）
+  if (!TRACKING_ENABLED) {
+    Logger.log('checkAllPrices: TRACKING_ENABLED=false のためスキップ');
+    return;
+  }
   const ss = getSpreadsheet();
   const sheet = getSheet(SHEET_PRODUCTS);
   const historySheet = getSheet(SHEET_PRICE_HISTORY);

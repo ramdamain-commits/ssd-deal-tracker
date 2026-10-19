@@ -61,6 +61,11 @@ function sendErrorNotifications(errors) {
  * 週次サマリーメールを送信する（毎週月曜トリガー用）
  */
 function sendWeeklySummary() {
+  // 安全装置: 追跡停止中は週次レポートも送らない（トリガー消し忘れ対策）
+  if (!TRACKING_ENABLED) {
+    Logger.log('sendWeeklySummary: TRACKING_ENABLED=false のためスキップ');
+    return;
+  }
   const notifyEmail = getConfigValue('notify_email');
   if (!notifyEmail) return;
 
